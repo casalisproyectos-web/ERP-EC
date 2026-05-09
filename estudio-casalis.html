@@ -185,7 +185,32 @@
   @media (max-width: 768px) {
     .grid-4 { grid-template-columns: repeat(2, 1fr); }
     .grid-3 { grid-template-columns: repeat(2, 1fr); }
-    #sidebar { width: 180px; }
+    .grid-auto { grid-template-columns: repeat(2, 1fr); }
+    #sidebar {
+      position: fixed; left: -240px; top: 0; bottom: 0;
+      width: 240px; z-index: 1000;
+      transition: left .25s ease;
+    }
+    #sidebar.open { left: 0; box-shadow: 4px 0 20px rgba(0,0,0,.6); }
+    #main { max-height: 100vh; padding-bottom: 60px; }
+    .view { padding: 16px !important; }
+    #mobile-menu-btn {
+      display: flex !important;
+    }
+    #mobile-overlay {
+      display: none; position: fixed; inset: 0;
+      background: rgba(0,0,0,.5); z-index: 999;
+    }
+    #mobile-overlay.show { display: block; }
+    .card { padding: 14px; }
+    .section-title { font-size: 20px !important; }
+    .grid-4 { gap: 8px; }
+    .grid-3 { gap: 8px; }
+    table { font-size: 10px; }
+  }
+  @media (min-width: 769px) {
+    #mobile-menu-btn { display: none !important; }
+    #mobile-overlay { display: none !important; }
   }
 </style>
 </head>
@@ -208,18 +233,24 @@
 
     <div class="ornamental-inner" id="login-box-inner">
       <!-- Hex Logo -->
-      <svg width="64" height="64" viewBox="0 0 48 48">
-        <polygon points="24,3 42,13.5 42,34.5 24,45 6,34.5 6,13.5" fill="none" stroke="#D9C49D" stroke-width="1.5"/>
-        <polygon points="24,7 38,15.5 38,32.5 24,41 10,32.5 10,15.5" fill="none" stroke="#A89060" stroke-width=".5" opacity=".4"/>
-        <path d="M20,17 Q14,17 14,24 Q14,31 20,31" fill="none" stroke="#D9C49D" stroke-width="2" stroke-linecap="round"/>
-        <line x1="23" y1="17" x2="23" y2="31" stroke="#D9C49D" stroke-width="2" stroke-linecap="round"/>
-        <line x1="23" y1="24" x2="30" y2="17" stroke="#D9C49D" stroke-width="2" stroke-linecap="round"/>
-        <line x1="23" y1="24" x2="30" y2="31" stroke="#D9C49D" stroke-width="2" stroke-linecap="round"/>
-      </svg>
+            <svg width="64" height="64" viewBox="0 0 100 100">
+  <!-- Hexágono flat-top -->
+  <polygon points="28,6 72,6 96,50 72,94 28,94 4,50" fill="none" stroke="#D9C49D" stroke-width="3" stroke-linejoin="round"/>
+  <!-- Línea vertical central que divide izq/der -->
+  <line x1="50" y1="6" x2="50" y2="94" stroke="#D9C49D" stroke-width="2.5"/>
+  <!-- Barra vertical izquierda (la I) -->
+  <line x1="32" y1="36" x2="32" y2="64" stroke="#D9C49D" stroke-width="3" stroke-linecap="round"/>
+  <!-- K derecha: diagonal superior hacia esquina superior-der del hexágono -->
+  <line x1="50" y1="50" x2="96" y2="6" stroke="#D9C49D" stroke-width="2.5" stroke-linecap="round"/>
+  <!-- K derecha: diagonal inferior hacia esquina inferior-der del hexágono -->
+  <line x1="50" y1="50" x2="96" y2="94" stroke="#D9C49D" stroke-width="2.5" stroke-linecap="round"/>
+  <!-- Línea horizontal media derecha (cierre del K) -->
+  <line x1="50" y1="50" x2="96" y2="50" stroke="#D9C49D" stroke-width="2" stroke-linecap="round"/>
+</svg>
       <div class="login-brand">ESTUDIO CASALIS</div>
       <div class="login-brand-sub">Gestión de Obras</div>
       <div class="gold-divider"><div class="gold-divider-diamond"></div></div>
-      <div style="text-align:left">
+      <div id="login-fields" style="text-align:left">
         <div class="field">
           <div class="field-label">Correo electrónico</div>
           <input class="field-input" id="login-email" type="email" placeholder="usuario@casalis.com" />
@@ -230,13 +261,19 @@
         </div>
         <div id="login-error" style="color:var(--error);font-size:12px;margin-bottom:12px;text-align:center;display:none"></div>
         <button class="btn btn-primary" id="login-btn" style="width:100%;margin-top:8px" onclick="doLogin()">Ingresar al Sistema</button>
+        <button class="btn btn-ghost" style="width:100%;margin-top:8px;font-size:11px" onclick="toggleRegistro()">¿Primera vez? Registrate como cliente</button>
+      </div>
+      <div id="registro-form" style="display:none;text-align:left;margin-top:16px">
+        <div class="gold-divider"><div class="gold-divider-diamond"></div></div>
+        <div style="font-size:12px;font-weight:700;color:var(--gold);letter-spacing:.1em;text-transform:uppercase;margin-bottom:12px">Registro de Cliente</div>
+        <div class="field"><div class="field-label">Nombre completo</div><input class="field-input" id="reg-name" type="text" placeholder="Tu nombre"/></div>
+        <div class="field"><div class="field-label">Email</div><input class="field-input" id="reg-email" type="email" placeholder="tu@email.com"/></div>
+        <div class="field"><div class="field-label">Contraseña</div><input class="field-input" id="reg-pass" type="password" placeholder="••••••••"/></div>
+        <div id="reg-msg" style="font-size:11px;margin-bottom:8px;display:none"></div>
+        <button class="btn btn-primary" style="width:100%" onclick="registrarCliente()">Crear cuenta</button>
+        <button class="btn btn-ghost" style="width:100%;margin-top:6px;font-size:11px" onclick="toggleRegistro()">Volver al login</button>
       </div>
       <div class="gold-divider"><div class="gold-divider-diamond"></div></div>
-      <div style="font-size:10px;color:var(--textMuted);letter-spacing:.06em;line-height:1.8">
-        <div>admin@casalis.com · admin123</div>
-        <div>martin@email.com · cliente123</div>
-        <div>lucas@casalis.com · emp123</div>
-      </div>
       <div style="font-size:9px;color:var(--textMuted);margin-top:12px;letter-spacing:.05em;font-style:italic">
         Acompañamiento técnico de obra, de principio a fin
       </div>
@@ -247,16 +284,28 @@
 <!-- ═══════════════ MAIN APP ═══════════════ -->
 <div id="app" class="hidden">
   <!-- SIDEBAR -->
+  <!-- Mobile overlay -->
+  <div id="mobile-overlay" onclick="closeMobileMenu()"></div>
+
+  <!-- Mobile menu button -->
+  <button id="mobile-menu-btn" onclick="toggleMobileMenu()" style="display:none;position:fixed;top:12px;left:12px;z-index:1001;background:var(--bgCard);border:1px solid var(--goldBorder);color:var(--gold);padding:8px 12px;cursor:pointer;border-radius:2px;font-size:16px">☰</button>
+
   <div id="sidebar">
     <div class="sb-header">
-      <svg width="32" height="32" viewBox="0 0 48 48">
-        <polygon points="24,3 42,13.5 42,34.5 24,45 6,34.5 6,13.5" fill="none" stroke="#D9C49D" stroke-width="1.5"/>
-        <polygon points="24,7 38,15.5 38,32.5 24,41 10,32.5 10,15.5" fill="none" stroke="#A89060" stroke-width=".5" opacity=".4"/>
-        <path d="M20,17 Q14,17 14,24 Q14,31 20,31" fill="none" stroke="#D9C49D" stroke-width="2" stroke-linecap="round"/>
-        <line x1="23" y1="17" x2="23" y2="31" stroke="#D9C49D" stroke-width="2" stroke-linecap="round"/>
-        <line x1="23" y1="24" x2="30" y2="17" stroke="#D9C49D" stroke-width="2" stroke-linecap="round"/>
-        <line x1="23" y1="24" x2="30" y2="31" stroke="#D9C49D" stroke-width="2" stroke-linecap="round"/>
-      </svg>
+            <svg width="32" height="32" viewBox="0 0 100 100">
+  <!-- Hexágono flat-top -->
+  <polygon points="28,6 72,6 96,50 72,94 28,94 4,50" fill="none" stroke="#D9C49D" stroke-width="3" stroke-linejoin="round"/>
+  <!-- Línea vertical central que divide izq/der -->
+  <line x1="50" y1="6" x2="50" y2="94" stroke="#D9C49D" stroke-width="2.5"/>
+  <!-- Barra vertical izquierda (la I) -->
+  <line x1="32" y1="36" x2="32" y2="64" stroke="#D9C49D" stroke-width="3" stroke-linecap="round"/>
+  <!-- K derecha: diagonal superior hacia esquina superior-der del hexágono -->
+  <line x1="50" y1="50" x2="96" y2="6" stroke="#D9C49D" stroke-width="2.5" stroke-linecap="round"/>
+  <!-- K derecha: diagonal inferior hacia esquina inferior-der del hexágono -->
+  <line x1="50" y1="50" x2="96" y2="94" stroke="#D9C49D" stroke-width="2.5" stroke-linecap="round"/>
+  <!-- Línea horizontal media derecha (cierre del K) -->
+  <line x1="50" y1="50" x2="96" y2="50" stroke="#D9C49D" stroke-width="2" stroke-linecap="round"/>
+</svg>
       <div>
         <div class="sb-brand-name">CASALIS</div>
         <div class="sb-brand-sub">ESTUDIO</div>
@@ -279,6 +328,10 @@
     <div id="view-tasks" class="view hidden"></div>
     <div id="view-team" class="view hidden"></div>
     <div id="view-notifications" class="view hidden"></div>
+    <div id="view-mensajes" class="view hidden"></div>
+    <div id="view-pedidos" class="view hidden"></div>
+    <div id="view-trabajos" class="view hidden"></div>
+    <div id="view-auditoria" class="view hidden"></div>
     <div id="view-myproject" class="view hidden"></div>
     <div id="view-mytasks" class="view hidden"></div>
   </main>
@@ -287,7 +340,7 @@
 <script>
 // ─── SUPABASE CONFIG ───────────────────────────────────────────────────────────
 const SUPABASE_URL = 'https://aorzucbtbqofiegvmzsb.supabase.co';
-const SUPABASE_ANON_KEY = ''; // ← Pegá acá tu anon key de Supabase
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFvcnp1Y2J0YnFvZmllZ3ZtenNiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzczMDA3NzUsImV4cCI6MjA5Mjg3Njc3NX0.1VWOFvOWz7lqC-KPo4Or-s43l4yoJuhgIEC10pPlpmc'; // ← Pegá acá tu anon key de Supabase
 
 // ─── SUPABASE CLIENT (lightweight, sin SDK) ────────────────────────────────────
 const db = {
@@ -339,6 +392,21 @@ const db = {
       if (!res.ok) throw new Error(await res.text());
       return await res.json();
     } catch(e) { console.warn('Supabase patch:', e); return null; }
+  },
+  async delete(table, id) {
+    if (!SUPABASE_ANON_KEY) return null;
+    try {
+      const res = await fetch(`${SUPABASE_URL}/rest/v1/${table}?id=eq.${id}`, {
+        method: 'DELETE',
+        headers: {
+          'apikey': SUPABASE_ANON_KEY,
+          'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      if (!res.ok) throw new Error(await res.text());
+      return true;
+    } catch(e) { console.warn('Supabase delete:', e); return null; }
   }
 };
 
@@ -349,60 +417,20 @@ async function checkSupabase() {
     return;
   }
   try {
-    const r = await fetch(`${SUPABASE_URL}/rest/v1/`, { headers: { 'apikey': SUPABASE_ANON_KEY } });
+    const r = await fetch(`${SUPABASE_URL}/rest/v1/users?select=id&limit=1`, { headers: { 'apikey': SUPABASE_ANON_KEY } });
     if (r.ok || r.status === 200) { el.textContent = '⬡ Supabase conectado'; el.className = 'connected'; }
     else throw new Error();
   } catch { el.textContent = '✕ Supabase error'; el.className = 'error'; }
 }
 checkSupabase();
 
-// ─── MOCK DATA ─────────────────────────────────────────────────────────────────
+// ─── DATOS (solo desde Supabase) ───────────────────────────────────────────────
 const USERS = {
-  'admin@casalis.com': { id:1, name:'Arq. Casalis', role:'5U', email:'admin@casalis.com', pass:'admin123' },
-  'martin@email.com':  { id:2, name:'Martín Pérez', role:'cliente', email:'martin@email.com', pass:'cliente123' },
-  'lucas@casalis.com': { id:3, name:'Lucas Díaz', role:'3A', email:'lucas@casalis.com', pass:'emp123' },
+  'admin@casalis.com': { id:null, name:'Arq. Casalis', role:'5U', email:'admin@casalis.com', pass:'admin123' },
 };
 
-let PROJECTS = [
-  { id:'OB-001', name:'Casa Familiar Nordelta', client:'Martín Pérez', status:'activa', progress:68, zone:'Norte',
-    tasks:[
-      {id:'T-001',name:'Cimentación',status:'Cerrado',level:'3A',weight:20,photos:4},
-      {id:'T-002',name:'Estructura planta baja',status:'Cerrado',level:'3A',weight:25,photos:6},
-      {id:'T-003',name:'Planos eléctricos',status:'Revisión',level:'2E',weight:10,photos:1},
-      {id:'T-004',name:'Mamposterías internas',status:'Haciendo',level:'3A',weight:20,photos:2},
-      {id:'T-005',name:'Cubierta techo',status:'Pendiente',level:'4A',weight:15,photos:0},
-      {id:'T-006',name:'Instalación sanitaria',status:'Pendiente',level:'3A',weight:10,photos:0},
-    ],
-    updates:[
-      {date:'2025-04-24',text:'Avance en mamposterías internas. 3 fotos subidas.',user:'Lucas Díaz'},
-      {date:'2025-04-21',text:'Planos eléctricos enviados a revisión.',user:'Ana Torres'},
-      {date:'2025-04-18',text:'Estructura planta baja completada.',user:'Lucas Díaz'},
-    ]},
-  { id:'OB-002', name:'Oficinas Centro Empresarial', client:'TechGroup SA', status:'activa', progress:35, zone:'Centro',
-    tasks:[
-      {id:'T-010',name:'Relevamiento y planos',status:'Cerrado',level:'2E',weight:15,photos:3},
-      {id:'T-011',name:'Demolición parcial',status:'Cerrado',level:'3A',weight:10,photos:5},
-      {id:'T-012',name:'Tabiques divisorios',status:'Haciendo',level:'3A',weight:30,photos:2},
-      {id:'T-013',name:'Instalación eléctrica',status:'Pendiente',level:'3E',weight:25,photos:0},
-      {id:'T-014',name:'Terminaciones y pintura',status:'Pendiente',level:'2A',weight:20,photos:0},
-    ],
-    updates:[{date:'2025-04-23',text:'Iniciaron tabiques divisorios sector A.',user:'Carlos Ruiz'}]},
-  { id:'OB-003', name:'Regularización Villa Bosch', client:'Roberto Sanz', status:'pausada', progress:20, zone:'Sur',
-    tasks:[
-      {id:'T-020',name:'Planos de relevamiento',status:'Cerrado',level:'1E',weight:20,photos:2},
-      {id:'T-021',name:'Gestión municipal',status:'Haciendo',level:'4I',weight:50,photos:0},
-      {id:'T-022',name:'Plano final aprobado',status:'Pendiente',level:'2E',weight:30,photos:0},
-    ],
-    updates:[]}
-];
-
-const TEAM = [
-  {id:1,name:'Lucas Díaz',level:'3A',area:'Mano de Obra',tasks:3,load:'alta'},
-  {id:2,name:'Ana Torres',level:'2E',area:'Dibujo Técnico',tasks:2,load:'media'},
-  {id:3,name:'Carlos Ruiz',level:'3A',area:'Mano de Obra',tasks:2,load:'media'},
-  {id:4,name:'Ing. Sosa',level:'4I',area:'Dirección de Obra',tasks:1,load:'baja'},
-  {id:5,name:'Cra. Lima',level:'3O',area:'Administración',tasks:4,load:'alta'},
-];
+let PROJECTS = [];
+const TEAM = [];
 
 // ─── STATE ─────────────────────────────────────────────────────────────────────
 let currentUser = null;
@@ -436,6 +464,29 @@ function loadColor(l) {
 }
 
 // ─── LOGIN / LOGOUT ───────────────────────────────────────────────────────────
+function toggleRegistro() {
+  const loginFields = document.getElementById('login-fields');
+  const regForm = document.getElementById('registro-form');
+  if (loginFields) loginFields.style.display = loginFields.style.display==='none' ? 'block' : 'none';
+  if (regForm) regForm.style.display = regForm.style.display==='none' ? 'block' : 'none';
+}
+
+async function registrarCliente() {
+  const name = document.getElementById('reg-name').value.trim();
+  const email = document.getElementById('reg-email').value.trim();
+  const pass  = document.getElementById('reg-pass').value;
+  const msg   = document.getElementById('reg-msg');
+  if (!name||!email||!pass) { msg.style.display='block'; msg.style.color='var(--error)'; msg.textContent='Completá todos los campos.'; return; }
+  msg.style.display='block'; msg.style.color='var(--goldDim)'; msg.textContent='Creando cuenta...';
+  const result = await db.insert('users', { name, email, password: pass, role: 'cliente', province: '', region: '' });
+  if (result) {
+    msg.style.color='var(--success)'; msg.textContent='✓ Cuenta creada. Ya podés ingresar.';
+    setTimeout(()=>{ toggleRegistro(); document.getElementById('login-email').value=email; }, 1500);
+  } else {
+    msg.style.color='var(--error)'; msg.textContent='Error al crear la cuenta. El email puede estar en uso.';
+  }
+}
+
 async function doLogin() {
   const email = document.getElementById('login-email').value.trim();
   const pass  = document.getElementById('login-pass').value;
@@ -454,12 +505,14 @@ async function doLogin() {
     }
   }
 
-  // Fallback: mock data
+  // Fallback: solo cuenta CEO local si Supabase falla
   setTimeout(() => {
     const u = USERS[email];
-    if (u && u.pass === pass) { currentUser = u; startApp(); }
-    else {
-      errEl.textContent = 'Credenciales incorrectas.'; errEl.style.display = 'block';
+    if (u && u.pass === pass) {
+      currentUser = { id: 'local-5u', name: u.name, role: u.role, email: u.email };
+      startApp();
+    } else {
+      errEl.textContent = 'Credenciales incorrectas o sin conexión.'; errEl.style.display = 'block';
       btn.disabled = false; btn.textContent = 'Ingresar al Sistema';
     }
   }, 600);
@@ -471,24 +524,76 @@ function startApp() {
   document.getElementById('login-screen').classList.add('hidden');
   document.getElementById('app').classList.remove('hidden');
   document.getElementById('sb-username').textContent = currentUser.name;
-  document.getElementById('sb-userrole').textContent = `Nivel ${currentUser.role}`;
+  const roleLabel = ROLE_LABELS[currentUser.role] || currentUser.role;
+  document.getElementById('sb-userrole').textContent = roleLabel;
   buildNav();
-  const defaultView = currentUser.role === '5U' ? 'dashboard' : currentUser.role === 'cliente' ? 'myproject' : 'mytasks';
-  navigateTo(defaultView);
 
-  // Load from Supabase if available
+  const area = getArea(currentUser.role);
+  let defaultView = 'mytasks';
+  if (currentUser.role === 'cliente') defaultView = 'myproject';
+  else if (area === 'U' || area === 'I') defaultView = 'dashboard';
+  else if (area === 'O') defaultView = 'finanzas';
+  
+  // Agregar vistas faltantes al DOM si no existen
+  const main = document.getElementById('main');
+  ['admin','finanzas'].forEach(v => {
+    if (!document.getElementById('view-'+v)) {
+      const d = document.createElement('div');
+      d.id = 'view-'+v; d.className = 'view hidden';
+      main.appendChild(d);
+    }
+  });
+
+  navigateTo(defaultView);
   if (SUPABASE_ANON_KEY) loadFromSupabase();
 }
 
 async function loadFromSupabase() {
-  const rows = await db.query('projects', '?select=*');
-  if (rows && rows.length > 0) {
-    // Merge basic fields; tasks/updates stay local until full schema is set up
-    rows.forEach(r => {
-      const p = PROJECTS.find(x => x.id === r.code);
-      if (p) { p.progress = r.progress ?? p.progress; p.status = r.status ?? p.status; }
-    });
+  try {
+    // Cargar proyectos
+    const projects = await db.query('projects', '?select=*&order=id');
+    // Cargar tareas
+    const tasks = await db.query('tasks', '?select=*&order=id');
+    // Cargar equipo
+    const team = await db.query('users', '?select=id,name,role,province&role=neq.cliente');
+
+    if (projects && projects.length > 0) {
+      PROJECTS = projects.map(p => ({
+        id: p.id,
+        name: p.name,
+        client: p.client,
+        status: p.status || 'activa',
+        progress: p.progress || 0,
+        zone: p.zone || p.region || '',
+        province: p.province || '',
+        tasks: tasks ? tasks.filter(t => t.project_id === p.id).map(t => ({
+          id: t.id,
+          name: t.name,
+          status: t.status || 'Pendiente',
+          level: t.level || '',
+          weight: t.weight || 0,
+          photos: t.photos || 0
+        })) : [],
+        updates: []
+      }));
+    }
+
+    if (team && team.length > 0) {
+      const areaNames = {'A':'Mano de Obra','E':'Dibujo Técnico','I':'Dirección de Obra','O':'Administración','U':'Gobierno'};
+      TEAM.length = 0;
+      team.forEach((u,i) => {
+        const area = u.role && u.role.length === 2 ? u.role[1] : '';
+        TEAM.push({
+          id: u.id, name: u.name, level: u.role || '',
+          area: areaNames[area] || 'General', tasks: 0, load: 'media'
+        });
+      });
+    }
+
     if (currentView) renderCurrentView();
+  } catch(e) {
+    console.warn('Error cargando datos de Supabase:', e);
+    renderCurrentView();
   }
 }
 
@@ -502,37 +607,141 @@ function doLogout() {
   document.getElementById('login-btn').textContent = 'Ingresar al Sistema';
 }
 
-// ─── NAVIGATION ───────────────────────────────────────────────────────────────
-const NAV_ITEMS = {
-  '5U': [
-    {id:'dashboard', label:'Panel General', icon:'◈'},
-    {id:'projects',  label:'Obras',         icon:'⬡'},
-    {id:'tasks',     label:'Tareas',        icon:'◇'},
-    {id:'team',      label:'Personal',      icon:'◎'},
-    {id:'notifications', label:'Alertas',   icon:'◉'},
-  ],
-  'cliente': [
-    {id:'myproject',     label:'Mi Obra',        icon:'⬡'},
-    {id:'notifications', label:'Notificaciones', icon:'◉'},
-  ],
-  'default': [
-    {id:'mytasks',       label:'Mis Tareas', icon:'◇'},
-    {id:'notifications', label:'Alertas',    icon:'◉'},
-  ],
+// ─── ROLES Y PERMISOS ─────────────────────────────────────────────────────────
+const ROLE_LABELS = {
+  '1A':'Ayudante','2A':'Oficial','3A':'Capataz','4A':'Supervisor de Campo','5A':'Jefe de Ejecución',
+  '1E':'Auxiliar de CAD','2E':'Cadista Jr.','3E':'Proyectista','4E':'Modelador BIM','5E':'Director de Proyecto',
+  '1I':'Pasante','2I':'Residente Jr.','3I':'Arquitecto de Obra','4I':'Jefe de DO','5I':'Director de Obras',
+  '1O':'Auxiliar Administrativo','2O':'Asistente Administrativo','3O':'Analista Administrativo','4O':'COO','5O':'CFO',
+  '1U':'Director Local','2U':'Director Regional','3U':'Consultor','4U':'Estratega Operativo','5U':'CEO',
+  'cliente':'Cliente'
 };
 
+const AREA_LABELS = {
+  'A':'Mano de Obra','E':'Dibujo Técnico','I':'Dirección de Obra','O':'Administración','U':'Gobierno'
+};
+
+function getArea(role) { return role && role.length === 2 ? role[1] : null; }
+function getLevel(role) { return role && role.length === 2 ? parseInt(role[0]) : 0; }
+
+function canDo(action) {
+  const role = currentUser?.role;
+  const area = getArea(role);
+  const level = getLevel(role);
+  switch(action) {
+    case 'ver_todas_obras':    return area === 'U' || area === 'I' && level >= 4 || area === 'O' && level >= 3;
+    case 'crear_cuenta':       return area === 'U' && level >= 5 || area === 'O' && level >= 2;
+    case 'modificar_roles':    return area === 'U' && level >= 5 || area === 'O' && level >= 3;
+    case 'asignar_tareas':     return area === 'U' && level >= 4 || area === 'I' && level >= 3;
+    case 'aprobar_avances':    return area === 'I' || area === 'U';
+    case 'ver_finanzas':       return area === 'O' || area === 'U' || (area === 'I' && level >= 4);
+    case 'ver_equipo':         return area === 'U' || area === 'I' || area === 'A' && level >= 4 || area === 'O' && level >= 3;
+    case 'aprobar_planos':     return area === 'E' && level >= 4 || area === 'I' || area === 'U';
+    case 'ver_panel_global':   return area === 'U';
+    case 'ver_config':         return area === 'U' && level >= 4;
+    default: return false;
+  }
+}
+
+// ─── NAVIGATION ───────────────────────────────────────────────────────────────
+function getNavItems() {
+  const role = currentUser?.role;
+  const area = getArea(role);
+  const level = getLevel(role);
+
+  if (role === 'cliente') return [
+    {id:'myproject',     label:'Mi Obra',        icon:'⬡'},
+    {id:'mensajes',      label:'Contacto',       icon:'✉'},
+    {id:'notifications', label:'Notificaciones', icon:'◉'},
+  ];
+
+  if (area === 'U') {
+    const items = [
+      {id:'dashboard',     label:'Panel General', icon:'◈'},
+      {id:'projects',      label:'Obras',         icon:'⬡'},
+      {id:'trabajos',      label:'Trabajos',      icon:'◫'},
+      {id:'tasks',         label:'Tareas',        icon:'◇'},
+      {id:'finanzas',      label:'Finanzas',      icon:'$'},
+    ];
+    if (level >= 3) items.push({id:'team', label:'Personal', icon:'◎'});
+    if (level >= 4) items.push({id:'admin', label:'Administración', icon:'⚙'});
+    items.push({id:'mensajes', label:'Mensajes', icon:'✉'});
+    items.push({id:'notifications', label:'Alertas', icon:'◉'});
+    return items;
+  }
+
+  if (area === 'A') {
+    const items = [{id:'mytasks', label:'Mis Tareas', icon:'◇'}];
+    if (level >= 3) items.push({id:'pedidos', label:'Pedidos', icon:'📦'});
+    if (level >= 4) items.push({id:'team', label:'Mi Equipo', icon:'◎'});
+    items.push({id:'mensajes', label:'Mensajes', icon:'✉'});
+    items.push({id:'notifications', label:'Alertas', icon:'◉'});
+    return items;
+  }
+
+  if (area === 'E') return [
+    {id:'mytasks',       label:'Mis Planos',  icon:'◇'},
+    {id:'projects',      label:'Proyectos',   icon:'⬡'},
+    {id:'mensajes',      label:'Mensajes',    icon:'✉'},
+    {id:'notifications', label:'Alertas',     icon:'◉'},
+  ];
+
+  if (area === 'I') {
+    const items = [
+      {id:'dashboard',     label:'Panel',       icon:'◈'},
+      {id:'projects',      label:'Obras',       icon:'⬡'},
+      {id:'tasks',         label:'Tareas',      icon:'◇'},
+    ];
+    items.push({id:'pedidos', label:'Pedidos', icon:'📦'});
+    if (level >= 4) items.push({id:'finanzas', label:'Presupuesto', icon:'$'});
+    items.push({id:'mensajes', label:'Mensajes', icon:'✉'});
+    items.push({id:'notifications', label:'Alertas', icon:'◉'});
+    return items;
+  }
+
+  if (area === 'O') {
+    const items = [
+      {id:'finanzas',      label:'Finanzas',    icon:'◈'},
+      {id:'notifications', label:'Alertas',     icon:'◉'},
+    ];
+    if (level >= 2) items.splice(1,0,{id:'admin', label:'Usuarios', icon:'◎'});
+    items.push({id:'pedidos', label:'Pedidos', icon:'📦'});
+    items.push({id:'mensajes', label:'Mensajes', icon:'✉'});
+    return items;
+  }
+
+  return [
+    {id:'mytasks',       label:'Mis Tareas', icon:'◇'},
+    {id:'notifications', label:'Alertas',    icon:'◉'},
+  ];
+}
+
 function buildNav() {
-  const items = NAV_ITEMS[currentUser.role] || NAV_ITEMS['default'];
+  const items = getNavItems();
   const nav = document.getElementById('sidebar-nav');
   nav.innerHTML = items.map(i =>
     `<div class="nav-item" data-view="${i.id}" onclick="navigateTo('${i.id}')">
        <span class="nav-icon">${i.icon}</span>${i.label}
+       ${i.id==='notifications'?`<span id="notif-badge" style="margin-left:auto;background:var(--error);color:#fff;border-radius:10px;font-size:9px;padding:1px 6px;display:none">0</span>`:''}
      </div>`
   ).join('');
+  updateNotifBadge();
 }
 
-function navigateTo(view) {
-  currentView = view; projectDetailId = null; taskFilter = 'all'; activeTab = 'tasks'; uploadingTask = null;
+async function updateNotifBadge() {
+  if (!currentUser?.id) return;
+  const rows = await db.query('notifications', `?user_id=eq.${currentUser.id}&read=eq.false&select=id`) || [];
+  const badge = document.getElementById('notif-badge');
+  if (!badge) return;
+  if (rows.length > 0) { badge.textContent = rows.length; badge.style.display = 'inline'; }
+  else badge.style.display = 'none';
+}
+
+function navigateTo(view, keepDetail=false) {
+  currentView = view;
+  if (!keepDetail) projectDetailId = null;
+  taskFilter = 'all'; activeTab = 'tasks'; uploadingTask = null;
+  closeMobileMenu();
   document.querySelectorAll('.nav-item').forEach(el => {
     el.classList.toggle('active', el.dataset.view === view);
   });
@@ -544,160 +753,577 @@ function navigateTo(view) {
 function renderCurrentView() {
   const views = { dashboard: renderDashboard, projects: renderProjects,
     tasks: renderTasks, team: renderTeam, notifications: renderNotifications,
-    myproject: renderMyProject, mytasks: renderMyTasks };
+    myproject: renderMyProject, mytasks: renderMyTasks,
+    admin: renderAdmin, finanzas: renderFinanzas,
+    mensajes: renderMensajes, pedidos: renderPedidos, trabajos: renderTrabajos, auditoria: renderAuditoria };
   if (views[currentView]) views[currentView]();
 }
 
 // ─── DASHBOARD ────────────────────────────────────────────────────────────────
-function renderDashboard() {
-  const active  = PROJECTS.filter(p=>p.status==='activa').length;
-  const paused  = PROJECTS.filter(p=>p.status==='pausada').length;
-  const allT    = PROJECTS.flatMap(p=>p.tasks);
+async function renderDashboard() {
+  const area  = getArea(currentUser.role);
+  const level = getLevel(currentUser.role);
+  const el    = document.getElementById('view-dashboard');
+  el.innerHTML = `<div class="section-super">Panel</div><div class="section-title">Cargando...</div>`;
+
+  // Filtrar proyectos según rol
+  let myProjects = PROJECTS;
+  if (area==='U'&&level===1) myProjects = PROJECTS.filter(p=>p.province===currentUser.province);
+  else if (area==='U'&&level===2) myProjects = PROJECTS.filter(p=>p.region===currentUser.region);
+  else if (area==='I'&&level<=3) {
+    const myTeam = await db.query('project_team',`?user_id=eq.${currentUser.id}&select=project_id`) || [];
+    const ids = myTeam.map(t=>t.project_id);
+    myProjects = ids.length>0 ? PROJECTS.filter(p=>ids.includes(p.id)) : PROJECTS;
+  }
+
+  // Solo obras vigentes (no finalizadas ni canceladas)
+  const vigentes = myProjects.filter(p=>!['finalizada','cancelada'].includes(p.status));
+  const allT    = vigentes.flatMap(p=>p.tasks.filter(t=>t.status!=='Cerrado'));
+  const active  = vigentes.filter(p=>p.status==='activa').length;
+  const paused  = vigentes.filter(p=>p.status==='pausada').length;
   const inProg  = allT.filter(t=>t.status==='Haciendo').length;
   const pending = allT.filter(t=>t.status==='Pendiente').length;
+  const review  = allT.filter(t=>t.status==='Revisión').length;
 
-  const kpis = [
-    {label:'Obras Activas', value:active, icon:'⬡', color:'var(--success)'},
-    {label:'Obras Pausadas', value:paused, icon:'◌', color:'var(--warn)'},
-    {label:'En Curso', value:inProg, icon:'◇', color:'var(--goldBright)'},
-    {label:'Pendientes', value:pending, icon:'○', color:'var(--textMuted)'},
-  ];
+  // KPIs financieros si puede verlos
+  let finKpis = '';
+  if (area==='O'||area==='U'||(area==='I'&&level>=4)) {
+    const movs = await db.query('movements','?status=neq.rechazado&order=created_at.desc&limit=100') || [];
+    const ing = movs.filter(m=>m.type==='ingreso').reduce((a,m)=>a+Number(m.amount),0);
+    const egr = movs.filter(m=>m.type==='egreso').reduce((a,m)=>a+Number(m.amount),0);
+    const fmt = n=>'$'+Number(n).toLocaleString('es-AR');
+    finKpis = `<div style="margin-bottom:16px;font-size:12px;font-weight:700;color:var(--gold);letter-spacing:.12em;text-transform:uppercase">Resumen Financiero</div>
+    <div class="grid-3" style="margin-bottom:28px">
+      <div class="card"><div class="kpi-icon" style="color:var(--success)">↑</div><div class="kpi-value" style="color:var(--success);font-size:18px">${fmt(ing)}</div><div class="kpi-label">Ingresos</div></div>
+      <div class="card"><div class="kpi-icon" style="color:var(--error)">↓</div><div class="kpi-value" style="color:var(--error);font-size:18px">${fmt(egr)}</div><div class="kpi-label">Egresos</div></div>
+      <div class="card"><div class="kpi-icon" style="color:var(--gold)">◈</div><div class="kpi-value" style="color:var(--gold);font-size:18px">${fmt(ing-egr)}</div><div class="kpi-label">Saldo</div></div>
+    </div>`;
+  }
 
-  document.getElementById('view-dashboard').innerHTML = `
-    <div class="section-super">Panel General</div>
+  // Alertas pendientes
+  const alerts = await db.query('notifications',`?user_id=eq.${currentUser.id}&read=eq.false&select=id`) || [];
+
+  el.innerHTML = `
+    <div class="section-super">Panel · ${ROLE_LABELS[currentUser.role]||currentUser.role}</div>
     <div class="section-title">RESUMEN OPERATIVO</div>
-    <div class="section-sub">Estado actualizado al día de hoy</div>
-    <div class="grid-4">
-      ${kpis.map(k=>`<div class="card">
-        <div class="kpi-icon" style="color:${k.color}">${k.icon}</div>
-        <div class="kpi-value" style="color:${k.color}">${k.value}</div>
-        <div class="kpi-label">${k.label}</div>
-      </div>`).join('')}
+    <div class="section-sub">${currentUser.name} · ${currentUser.province||''}</div>
+
+    <div class="grid-4" style="margin-bottom:28px">
+      <div class="card"><div class="kpi-icon" style="color:var(--success)">⬡</div><div class="kpi-value" style="color:var(--success)">${active}</div><div class="kpi-label">Obras Activas</div></div>
+      <div class="card"><div class="kpi-icon" style="color:var(--warn)">◌</div><div class="kpi-value" style="color:var(--warn)">${paused}</div><div class="kpi-label">Obras Pausadas</div></div>
+      <div class="card"><div class="kpi-icon" style="color:var(--goldBright)">◇</div><div class="kpi-value" style="color:var(--goldBright)">${inProg}</div><div class="kpi-label">En Curso</div></div>
+      <div class="card" onclick="navigateTo('notifications')" style="cursor:pointer"><div class="kpi-icon" style="color:${alerts.length>0?'var(--error)':'var(--textMuted)'}">◉</div><div class="kpi-value" style="color:${alerts.length>0?'var(--error)':'var(--textMuted)'}">${alerts.length}</div><div class="kpi-label">Alertas</div></div>
     </div>
+
+    ${review>0?`<div class="card" style="margin-bottom:20px;border-color:var(--warn);background:var(--warn)08">
+      <div style="font-size:12px;color:var(--warn);font-weight:700">⏳ ${review} etapa${review!==1?'s':''} esperando revisión</div>
+    </div>`:''}
+
+    ${finKpis}
+
     <div style="margin-bottom:16px;display:flex;justify-content:space-between;align-items:center">
       <div style="font-size:12px;font-weight:700;color:var(--gold);letter-spacing:.12em;text-transform:uppercase">Estado de Obras</div>
       <button class="btn btn-ghost" style="font-size:10px;padding:6px 14px" onclick="navigateTo('projects')">Ver todas →</button>
     </div>
-    <div class="col-stack" style="margin-bottom:32px">
-      ${PROJECTS.map(p=>`<div class="card clickable" style="display:flex;align-items:center;gap:20px" onclick="navigateTo('projects')">
+    <div class="col-stack" style="margin-bottom:28px">
+      ${vigentes.length===0?`<div class="card" style="text-align:center;padding:24px;color:var(--textMuted)">Sin obras activas</div>`:''}
+      ${vigentes.map(p=>`<div class="card clickable" style="display:flex;align-items:center;gap:20px" onclick="openProject('${p.id}')">
         <div style="flex:1">
-          <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px">
-            <span style="font-size:10px;color:var(--goldDim);font-weight:600;letter-spacing:.1em">${p.id}</span>
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;flex-wrap:wrap">
+            <span style="font-size:10px;color:var(--goldDim);font-weight:600">${p.id}</span>
             <span style="font-size:13px;color:var(--text);font-weight:600">${p.name}</span>
             ${badge(p.status)}
           </div>
           ${progressBar(p.progress,5)}
+          <div style="font-size:10px;color:var(--textMuted);margin-top:4px">${p.tasks.filter(t=>t.status==='Haciendo').length} en curso · ${p.tasks.filter(t=>t.status==='Revisión').length} en revisión</div>
         </div>
-        <div style="text-align:right;min-width:60px">
+        <div style="text-align:right;flex-shrink:0">
           <div style="font-size:22px;font-weight:700;color:var(--gold)">${p.progress}%</div>
-          <div style="font-size:9px;color:var(--textMuted);letter-spacing:.08em">AVANCE</div>
-        </div>
-      </div>`).join('')}
-    </div>
-    ${divider()}
-    <div style="margin-bottom:16px;font-size:12px;font-weight:700;color:var(--gold);letter-spacing:.12em;text-transform:uppercase">Carga del Equipo</div>
-    <div class="grid-3">
-      ${TEAM.map(m=>`<div class="card">
-        <div style="font-size:12px;color:var(--text);font-weight:600;margin-bottom:4px">${m.name}</div>
-        <div style="font-size:10px;color:var(--goldDim);margin-bottom:8px">${m.area}</div>
-        <div style="display:flex;justify-content:space-between;align-items:center">
-          <span style="font-size:10px;color:var(--textMuted)">${m.tasks} tareas</span>
-          ${badge(m.load==='alta'?'Saturado':m.load==='media'?'En curso':'Disponible')}
+          <div style="font-size:9px;color:var(--textMuted)">AVANCE</div>
         </div>
       </div>`).join('')}
     </div>`;
 }
 
 // ─── PROJECTS ─────────────────────────────────────────────────────────────────
-function renderProjects() {
+async function renderProjects() {
   if (projectDetailId) { renderProjectDetail(); return; }
+  const area = getArea(currentUser.role);
+  const level = getLevel(currentUser.role);
+  const canCreate = (area==='I'&&level>=4)||(area==='U'&&level>=4);
+  const canEdit   = (area==='I'&&level>=3)||(area==='U'&&level>=4);
+
+  // Filtrar obras según rol
+  let visibleProjects = PROJECTS;
+  if (area==='U'&&level===1) visibleProjects = PROJECTS.filter(p=>p.province===currentUser.province);
+  else if (area==='U'&&level===2) visibleProjects = PROJECTS.filter(p=>p.region===currentUser.region);
+  else if (area==='I'&&level<=3) {
+    // 1I, 2I, 3I ven obras donde están en el equipo
+    const myTeam = await db.query('project_team', `?user_id=eq.${currentUser.id}&select=project_id`) || [];
+    const myProjectIds = myTeam.map(t=>t.project_id);
+    visibleProjects = myProjectIds.length > 0
+      ? PROJECTS.filter(p=>myProjectIds.includes(p.id))
+      : PROJECTS; // Si no está asignado a ninguna obra, ve todas
+  }
+
+  // Cargar clientes para el formulario
+  let clientes = [];
+  if (canCreate) clientes = await db.query('users','?role=eq.cliente&select=id,name') || [];
+
   document.getElementById('view-projects').innerHTML = `
     <div class="section-super">Módulo</div>
     <div class="section-title">GESTIÓN DE OBRAS</div>
-    <div class="col-stack">
-      ${PROJECTS.map(p => {
+    <div class="section-sub">${visibleProjects.length} obra${visibleProjects.length!==1?'s':''} activa${visibleProjects.length!==1?'s':''}</div>
+
+    ${canCreate ? `
+    <div class="card" style="margin-bottom:28px" id="form-proyecto">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+        <div style="font-size:12px;font-weight:700;color:var(--gold);letter-spacing:.12em;text-transform:uppercase">+ Nueva obra</div>
+        <button class="btn btn-ghost" style="font-size:10px;padding:4px 10px" onclick="toggleFormProyecto()">▲ Cerrar</button>
+      </div>
+      <div id="form-proyecto-inner">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
+          <div class="field" style="margin:0;grid-column:span 2"><div class="field-label">Nombre de la obra</div>
+            <input class="field-input" id="proj-name" placeholder="Ej: Casa Familiar García"/>
+          </div>
+          <div class="field" style="margin:0"><div class="field-label">Cliente</div>
+            <select class="field-input" id="proj-client">
+              <option value="">Seleccionar cliente...</option>
+              ${clientes.map(c=>`<option value="${c.name}">${c.name}</option>`).join('')}
+            </select>
+          </div>
+          <div class="field" style="margin:0"><div class="field-label">Presupuesto ($)</div>
+            <input class="field-input" id="proj-budget" type="number" placeholder="0"/>
+          </div>
+          <div class="field" style="margin:0"><div class="field-label">Provincia</div>
+            <select class="field-input" id="proj-province">
+              ${['Córdoba','Buenos Aires','Catamarca','Jujuy','Salta','Santiago del Estero','Chaco','Formosa','Misiones','Corrientes','Tucumán','La Rioja','San Luis','Mendoza','San Juan','Santa Fe','Entre Ríos','La Pampa','Neuquén','Río Negro','Chubut','Santa Cruz','Tierra del Fuego'].map(p=>`<option>${p}</option>`).join('')}
+            </select>
+          </div>
+          <div class="field" style="margin:0"><div class="field-label">Fecha de inicio</div>
+            <input class="field-input" id="proj-start" type="date"/>
+          </div>
+          <div class="field" style="margin:0;grid-column:span 2"><div class="field-label">Descripción (opcional)</div>
+            <textarea class="field-input" id="proj-desc" placeholder="Descripción breve del proyecto..." style="height:60px;resize:none"></textarea>
+          </div>
+        </div>
+        <div id="proj-msg" style="font-size:11px;display:none;margin-bottom:8px"></div>
+        <button class="btn btn-primary" onclick="crearProyecto()">Crear obra</button>
+      </div>
+    </div>` : ''}
+
+    <div class="col-stack" id="projects-list">
+      ${visibleProjects.length===0?`<div class="card" style="text-align:center;padding:32px;color:var(--textMuted)">Sin obras ${canCreate?'— creá la primera arriba':''}</div>`:''}
+      ${visibleProjects.map(p => {
         const closed = p.tasks.filter(t=>t.status==='Cerrado').length;
+        const statusColors = {activa:'var(--success)',pausada:'var(--warn)',finalizada:'var(--goldDim)',borrador:'var(--textMuted)',cancelada:'var(--error)'};
         return `<div class="card clickable" onclick="openProject('${p.id}')">
           <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px">
             <div>
-              <div style="display:flex;align-items:center;gap:12px;margin-bottom:6px">
+              <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;flex-wrap:wrap">
                 <span style="font-size:10px;color:var(--goldDim);font-weight:700;letter-spacing:.12em">${p.id}</span>
                 ${badge(p.status)}
-                <span style="font-size:10px;color:var(--textMuted);letter-spacing:.08em">ZONA ${p.zone.toUpperCase()}</span>
+                <span style="font-size:10px;color:var(--textMuted)">${p.province||p.zone||''}</span>
               </div>
-              <div style="font-size:16px;font-weight:700;color:var(--text);margin-bottom:2px">${p.name}</div>
+              <div style="font-size:16px;font-weight:700;color:var(--text);margin-bottom:4px">${p.name}</div>
               <div style="font-size:11px;color:var(--textMuted)">Cliente: ${p.client}</div>
             </div>
-            <div style="text-align:right">
+            <div style="text-align:right;flex-shrink:0">
               <div style="font-size:28px;font-weight:700;color:${p.progress>60?'var(--success)':p.progress>30?'var(--warn)':'var(--error)'};line-height:1">${p.progress}%</div>
-              <div style="font-size:9px;color:var(--textMuted);letter-spacing:.08em">COMPLETADO</div>
+              <div style="font-size:9px;color:var(--textMuted);letter-spacing:.08em">AVANCE</div>
             </div>
           </div>
           ${progressBar(p.progress,6)}
-          <div style="margin-top:12px;display:flex;gap:20px">
-            <span style="font-size:11px;color:var(--textMuted)">${closed}/${p.tasks.length} tareas</span>
-            <span style="font-size:11px;color:var(--textMuted)">${p.updates.length} actualizaciones</span>
+          <div style="margin-top:12px;display:flex;gap:20px;flex-wrap:wrap">
+            <span style="font-size:11px;color:var(--textMuted)">◇ ${closed}/${p.tasks.length} etapas</span>
+            ${p.budget?`<span style="font-size:11px;color:var(--textMuted)">$ Presupuesto: $${Number(p.budget).toLocaleString('es-AR')}</span>`:''}
           </div>
         </div>`;
       }).join('')}
     </div>`;
 }
 
-function openProject(id) { projectDetailId = id; renderProjectDetail(); }
+function toggleFormProyecto() {
+  const inner = document.getElementById('form-proyecto-inner');
+  if (inner) inner.classList.toggle('hidden');
+}
 
-function renderProjectDetail() {
+async function crearProyecto() {
+  const name     = document.getElementById('proj-name').value.trim();
+  const client   = document.getElementById('proj-client').value;
+  const budget   = parseFloat(document.getElementById('proj-budget').value) || 0;
+  const province = document.getElementById('proj-province').value;
+  const start    = document.getElementById('proj-start').value;
+  const desc     = document.getElementById('proj-desc').value.trim();
+  const msg      = document.getElementById('proj-msg');
+
+  const REGION_MAP = {'Catamarca':'Norte','Jujuy':'Norte','Salta':'Norte','Santiago del Estero':'Norte','Chaco':'Norte','Formosa':'Norte','Misiones':'Norte','Corrientes':'Norte','Tucumán':'Norte','Córdoba':'Centro','La Rioja':'Centro','San Luis':'Centro','Mendoza':'Centro','San Juan':'Centro','Santa Fe':'Centro','Entre Ríos':'Centro','Buenos Aires':'Sur','La Pampa':'Sur','Neuquén':'Sur','Río Negro':'Sur','Chubut':'Sur','Santa Cruz':'Sur','Tierra del Fuego':'Sur'};
+
+  if (!name || !client) { msg.style.display='block'; msg.style.color='var(--error)'; msg.textContent='Completá nombre y cliente.'; return; }
+
+  // Generar ID automático OB-XXX
+  const existing = await db.query('projects','?select=id&order=id.desc&limit=1') || [];
+  let nextNum = 1;
+  if (existing.length > 0) {
+    const lastId = existing[0].id; // OB-001
+    const lastNum = parseInt(lastId.replace('OB-','')) || 0;
+    nextNum = lastNum + 1;
+  }
+  const newId = 'OB-' + String(nextNum).padStart(3,'0');
+  const region = REGION_MAP[province] || 'Centro';
+
+  msg.style.display='block'; msg.style.color='var(--goldDim)'; msg.textContent='Creando obra...';
+
+  const result = await db.insert('projects', {
+    id: newId, name, client, status: 'borrador',
+    progress: 0, zone: region, province, region,
+    budget, description: desc, start_date: start || null
+  });
+
+  if (result) {
+    msg.style.color='var(--success)'; msg.textContent=`✓ Obra ${newId} creada como Borrador.`;
+    // Agregar localmente
+    PROJECTS.push({ id:newId, name, client, status:'borrador', progress:0, zone:region, province, region, budget, tasks:[], updates:[] });
+    setTimeout(()=>renderProjects(), 1200);
+  } else {
+    msg.style.color='var(--error)'; msg.textContent='Error al crear la obra.';
+  }
+}
+
+function openProject(id) { 
+  projectDetailId = id; 
+  currentView = 'projects';
+  document.querySelectorAll('.nav-item').forEach(el => {
+    el.classList.toggle('active', el.dataset.view === 'projects');
+  });
+  document.querySelectorAll('#main > div').forEach(el => el.classList.add('hidden'));
+  const el = document.getElementById('view-projects');
+  if (el) { el.classList.remove('hidden'); renderProjectDetail(); }
+}
+
+async function renderProjectDetail() {
   const p = PROJECTS.find(x=>x.id===projectDetailId);
+  if (!p) { backToProjects(); return; }
+  const area  = getArea(currentUser.role);
+  const level = getLevel(currentUser.role);
+  const canChangeStatus = (area==='I'&&level>=4)||(area==='U'&&level>=4);
+  const canAddTask      = (area==='I'&&level>=4)||(area==='U'&&level>=4);
+  const canDelete       = area==='U'&&level>=5;
+  const canEdit         = (area==='I'&&level>=3)||(area==='U'&&level>=4);
+
+  const ESTADOS = ['borrador','activa','pausada','en revision','finalizada','cancelada'];
+
+  // Cargar fotos de la obra
+  const photos = await db.query('photos',`?project_id=eq.${p.id}&order=created_at.desc&limit=6`) || [];
+
+  // Tab equipo
+  let teamContent = '';
+  if (activeTab === 'team') {
+    const equipo = await db.query('project_team', `?project_id=eq.${p.id}&select=*`) || [];
+    const canManageTeam = (area==='I'&&level>=4)||(area==='U'&&level>=4);
+    const cabeceras = ['4I','5I','4U','5U','5A','5E'];
+    
+    // Cargar usuarios disponibles para asignar
+    let disponibles = [];
+    if (canManageTeam) {
+      disponibles = await db.query('users', '?select=id,name,role,province&role=neq.cliente&order=role') || [];
+    }
+
+    const getObraCount = async (userId) => {
+      const rows = await db.query('project_team', `?user_id=eq.${userId}&select=project_id`) || [];
+      return rows.length;
+    };
+
+    teamContent = `<div class="col-stack-xs">
+      ${equipo.length===0?`<div style="font-size:12px;color:var(--textMuted);padding:20px;text-align:center">Sin equipo asignado</div>`:''}
+      ${equipo.map(m=>`<div class="card" style="display:flex;align-items:center;gap:12px">
+        <div style="width:34px;height:34px;border-radius:50%;background:var(--bgPanel);border:1px solid var(--goldBorder);display:flex;align-items:center;justify-content:center;font-size:13px;color:var(--gold);flex-shrink:0">${m.user_name?.charAt(0)||'?'}</div>
+        <div style="flex:1">
+          <div style="font-size:13px;color:var(--text);font-weight:600">${m.user_name}</div>
+          <div style="font-size:10px;color:var(--textMuted)">${m.user_role} · ${ROLE_LABELS[m.user_role]||m.user_role}</div>
+          ${m.is_lead?`<div style="font-size:10px;color:var(--gold);margin-top:2px">★ Responsable de obra</div>`:''}
+        </div>
+        ${canManageTeam?`<button class="btn btn-ghost" style="font-size:10px;padding:4px 8px;color:var(--error)" onclick="quitarEquipo('${m.id}','${p.id}')">✕</button>`:''}
+      </div>`).join('')}
+      ${canManageTeam?`
+      <div class="card" style="margin-top:12px">
+        <div style="font-size:11px;font-weight:700;color:var(--gold);margin-bottom:12px">+ Agregar al equipo</div>
+        <div style="display:grid;grid-template-columns:1fr auto;gap:8px;margin-bottom:8px;align-items:end">
+          <div>
+            <div class="field-label" style="font-size:10px;margin-bottom:4px">Empleado</div>
+            <select class="field-input" id="team-user-select" style="font-size:11px">
+              <option value="">Seleccionar...</option>
+              ${disponibles.map(u=>`<option value="${u.id}|${u.name}|${u.role}">${u.name} — ${u.role} ${ROLE_LABELS[u.role]||''}</option>`).join('')}
+            </select>
+          </div>
+          <label style="display:flex;align-items:center;gap:6px;font-size:11px;color:var(--textMuted);cursor:pointer;padding-bottom:6px">
+            <input type="checkbox" id="team-is-lead" style="accent-color:var(--gold)"/> Responsable
+          </label>
+        </div>
+        <div id="team-msg" style="font-size:11px;display:none;margin-bottom:8px"></div>
+        <button class="btn btn-primary" style="font-size:10px" onclick="agregarEquipo('${p.id}')">Agregar</button>
+      </div>`:''}
+    </div>`;
+  }
+
   const tabContent = activeTab === 'tasks'
     ? `<div class="col-stack-xs">
-        ${p.tasks.map(t=>`<div class="card" style="display:flex;align-items:center;gap:16px">
+        ${p.tasks.length===0?`<div style="font-size:12px;color:var(--textMuted);padding:20px;text-align:center">Sin etapas cargadas</div>`:''}
+        ${p.tasks.map(t=>`<div class="card" style="display:flex;align-items:center;gap:12px">
           <div style="flex:1">
-            <div style="display:flex;align-items:center;gap:10px;margin-bottom:4px">
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:4px;flex-wrap:wrap">
               <span style="font-size:10px;color:var(--goldDim);font-weight:700">${t.id}</span>
               <span style="font-size:13px;color:var(--text);font-weight:600">${t.name}</span>
             </div>
-            <div style="display:flex;gap:16px">
+            <div style="display:flex;gap:12px;flex-wrap:wrap">
               <span style="font-size:10px;color:var(--textMuted)">Nivel: ${t.level}</span>
               <span style="font-size:10px;color:var(--textMuted)">Peso: ${t.weight}%</span>
-              <span style="font-size:10px;color:${t.photos>0?'var(--goldDim)':'var(--error)'}">${t.photos>0?`📷 ${t.photos} fotos`:'⚠ Sin fotos'}</span>
+              <span style="font-size:10px;color:${t.photos>0?'var(--goldDim)':'var(--textMuted)'}">📷 ${t.photos||0}</span>
             </div>
           </div>
           ${badge(t.status)}
+          ${canChangeStatus?`<select class="field-input" style="width:130px;font-size:10px;padding:4px 8px" onchange="changeTaskStatus('${t.id}',this.value,'view-projects')">
+            <option value="">Cambiar...</option>
+            ${['Pendiente','Haciendo','Revisión','Cerrado'].map(s=>`<option value="${s}" ${t.status===s?'selected':''}>${s}</option>`).join('')}
+          </select>`:''}
+          ${canDelete?`<button class="btn btn-ghost" style="font-size:10px;padding:4px 8px;color:var(--error)" onclick="eliminarTarea('${t.id}','${p.id}')">✕</button>`:''}
         </div>`).join('')}
+        ${canAddTask?`
+        <div class="card" style="margin-top:12px">
+          <div style="font-size:11px;font-weight:700;color:var(--gold);margin-bottom:12px">+ Nueva etapa</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
+            <input class="field-input" id="task-name" placeholder="Nombre de la etapa"/>
+            <select class="field-input" id="task-level">
+              <option value="">Área...</option>
+              ${['1A','2A','3A','4A','5A','1E','2E','3E','4E','5E','1I','2I','3I','4I','5I'].map(l=>`<option value="${l}">${l} — ${ROLE_LABELS[l]||l}</option>`).join('')}
+            </select>
+            <input class="field-input" id="task-weight" type="number" placeholder="Peso %" min="0" max="100"/>
+          </div>
+          <div id="task-msg" style="font-size:11px;display:none;margin-bottom:8px"></div>
+          <button class="btn btn-primary" style="font-size:10px" onclick="crearTarea('${p.id}')">Crear etapa</button>
+        </div>`:''}
       </div>`
+    : activeTab === 'team' ? teamContent
     : `<div class="col-stack-xs">
-        ${p.updates.length===0?`<div style="font-size:12px;color:var(--textMuted);padding:20px;text-align:center">Sin actualizaciones registradas</div>`:''}
-        ${p.updates.map((u,i)=>`<div style="display:flex;gap:16px;padding-bottom:12px;border-bottom:1px solid var(--goldBorder)">
-          <div style="width:6px;height:6px;border-radius:50%;background:var(--goldDim);margin-top:5px;flex-shrink:0"></div>
-          <div>
-            <div style="font-size:12px;color:var(--text);margin-bottom:4px">${u.text}</div>
-            <div style="font-size:10px;color:var(--textMuted)">${u.user} · ${u.date}</div>
+        ${photos.length===0?`<div style="font-size:12px;color:var(--textMuted);padding:20px;text-align:center">Sin fotos de avance</div>`:''}
+        ${photos.map(ph=>`<div class="card" style="display:flex;gap:12px;align-items:flex-start">
+          ${ph.url?`<img src="${ph.url}" style="width:80px;height:60px;object-fit:cover;border-radius:2px;flex-shrink:0"/>`:`<div style="width:80px;height:60px;background:var(--bgPanel);border-radius:2px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0">📷</div>`}
+          <div style="flex:1">
+            <div style="font-size:12px;color:var(--text)">${ph.observation||'Sin observación'}</div>
+            <div style="font-size:10px;color:var(--textMuted);margin-top:4px">${ph.created_at?new Date(ph.created_at).toLocaleString('es-AR'):''}</div>
           </div>
         </div>`).join('')}
       </div>`;
 
   document.getElementById('view-projects').innerHTML = `
-    <div style="display:flex;align-items:center;gap:12px;margin-bottom:24px">
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:24px;flex-wrap:wrap">
       <button class="btn btn-ghost" style="padding:6px 12px;font-size:11px" onclick="backToProjects()">← Volver</button>
       <span style="font-size:10px;color:var(--goldDim);letter-spacing:.12em">${p.id}</span>
       ${badge(p.status)}
+      ${canChangeStatus?`<select class="field-input" style="width:160px;font-size:11px;padding:5px 10px" onchange="cambiarEstadoObra('${p.id}',this.value)">
+        ${ESTADOS.map(s=>`<option value="${s}" ${p.status===s?'selected':''}>${s.charAt(0).toUpperCase()+s.slice(1)}</option>`).join('')}
+      </select>`:''}
+      ${canEdit?`<button class="btn btn-ghost" style="font-size:10px;padding:5px 10px" onclick="editarProyecto('${p.id}')">✏ Editar</button>`:''}
+      ${canDelete?`<button class="btn btn-outline" style="font-size:10px;padding:5px 10px;color:var(--error);border-color:var(--error);margin-left:auto" onclick="eliminarObra('${p.id}')">Eliminar obra</button>`:''}
     </div>
-    <div style="margin-bottom:24px">
+    <div style="margin-bottom:20px">
       <div style="font-size:20px;font-weight:700;color:var(--gold);margin-bottom:4px">${p.name}</div>
-      <div style="font-size:11px;color:var(--textMuted)">Cliente: ${p.client} · Zona ${p.zone}</div>
+      <div style="font-size:11px;color:var(--textMuted)">Cliente: ${p.client} · ${p.province||p.zone||''} · ${p.region||''}</div>
+      ${p.description?`<div style="font-size:12px;color:var(--textMuted);margin-top:8px">${p.description}</div>`:''}
     </div>
-    <div class="card" style="margin-bottom:24px">
+    <div class="card" style="margin-bottom:20px">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
         <span style="font-size:11px;color:var(--goldDim);letter-spacing:.1em;text-transform:uppercase">Avance Total</span>
         <span style="font-size:24px;font-weight:700;color:var(--gold)">${p.progress}%</span>
       </div>
       ${progressBar(p.progress,8)}
-      <div style="margin-top:8px;font-size:10px;color:var(--textMuted)">Calculado automáticamente según peso de tareas</div>
+      ${p.budget?`<div style="margin-top:8px;font-size:11px;color:var(--textMuted)">Presupuesto: $${Number(p.budget).toLocaleString('es-AR')}</div>`:''}
     </div>
     <div class="tabs">
-      <div class="tab ${activeTab==='tasks'?'active':''}" onclick="switchTab('tasks')">Tareas</div>
-      <div class="tab ${activeTab==='history'?'active':''}" onclick="switchTab('history')">Historial</div>
+      <div class="tab ${activeTab==='tasks'?'active':''}" onclick="switchTab('tasks')">Etapas</div>
+      <div class="tab ${activeTab==='team'?'active':''}" onclick="switchTab('team')">Equipo</div>
+      <div class="tab ${activeTab==='history'?'active':''}" onclick="switchTab('history')">Fotos de avance</div>
     </div>
     ${tabContent}`;
+}
+
+async function cambiarEstadoObra(projectId, newStatus) {
+  const p = PROJECTS.find(x=>x.id===projectId);
+  if (!p) return;
+  p.status = newStatus;
+  await db.patch('projects', projectId, { status: newStatus });
+
+  // Notificaciones según estado
+  const msgs = {
+    activa:      { title: `Obra activada — ${p.name}`, body: `La obra "${p.name}" fue activada y está en curso.`, type: 'info' },
+    pausada:     { title: `Obra pausada — ${p.name}`, body: `La obra "${p.name}" fue pausada temporalmente.`, type: 'alerta' },
+    finalizada:  { title: `Obra finalizada — ${p.name}`, body: `La obra "${p.name}" fue marcada como finalizada.`, type: 'avance' },
+    cancelada:   { title: `Obra cancelada — ${p.name}`, body: `La obra "${p.name}" fue cancelada.`, type: 'alerta' },
+  };
+  const n = msgs[newStatus];
+  if (n) {
+    await notifyProjectTeam(projectId, n.title, n.body, n.type);
+    await notifyClient(projectId, n.title, `Actualización de tu obra: ${n.body}`, n.type);
+  }
+}
+
+async function eliminarObra(projectId) {
+  confirmarAccion('¿Eliminar esta obra? Esta acción no se puede deshacer.', async () => {
+    await db.delete('projects', projectId);
+    PROJECTS = PROJECTS.filter(p=>p.id!==projectId);
+    backToProjects();
+  });
+}
+
+async function crearTarea(projectId) {
+  const name   = document.getElementById('task-name').value.trim();
+  const level  = document.getElementById('task-level').value;
+  const weight = parseInt(document.getElementById('task-weight').value) || 0;
+  const msg    = document.getElementById('task-msg');
+  if (!name || !level) { msg.style.display='block'; msg.style.color='var(--error)'; msg.textContent='Completá nombre y área.'; return; }
+
+  const existing = await db.query('tasks',`?project_id=eq.${projectId}&select=id&order=id.desc&limit=1`) || [];
+  let nextNum = 1;
+  if (existing.length > 0) {
+    const lastNum = parseInt(existing[0].id.replace('T-','')) || 0;
+    nextNum = lastNum + 1;
+  } else {
+    const allTasks = await db.query('tasks','?select=id&order=id.desc&limit=1') || [];
+    if (allTasks.length > 0) nextNum = parseInt(allTasks[0].id.replace('T-','')) + 1;
+  }
+  const newId = 'T-' + String(nextNum).padStart(3,'0');
+
+  msg.style.display='block'; msg.style.color='var(--goldDim)'; msg.textContent='Creando etapa...';
+  const result = await db.insert('tasks',{id:newId, project_id:projectId, name, level, weight, status:'Pendiente', photos:0});
+  if (result) {
+    msg.style.color='var(--success)'; msg.textContent=`✓ Etapa ${newId} creada.`;
+    const p = PROJECTS.find(x=>x.id===projectId);
+    if (p) p.tasks.push({id:newId, name, level, weight, status:'Pendiente', photos:0});
+    // Notificar al área asignada
+    const area = level[1];
+    if (area) await notifyByArea(area, `Nueva etapa asignada — ${name}`, `Obra: ${p?.name||projectId}. Se te asignó la etapa "${name}".`, 'info');
+    setTimeout(()=>renderProjectDetail(), 1000);
+  } else { msg.style.color='var(--error)'; msg.textContent='Error al crear la etapa.'; }
+}
+
+async function agregarEquipo(projectId) {
+  const select = document.getElementById('team-user-select');
+  const isLead = document.getElementById('team-is-lead').checked;
+  const msg    = document.getElementById('team-msg');
+  if (!select.value) { msg.style.display='block'; msg.style.color='var(--error)'; msg.textContent='Seleccioná un empleado.'; return; }
+
+  const [userId, userName, userRole] = select.value.split('|');
+  const cabeceras = ['4I','5I','4U','5U','5A','5E'];
+  const esCabecera = cabeceras.includes(userRole);
+
+  // Verificar carga si es cabecera
+  if (esCabecera) {
+    const obrasActuales = await db.query('project_team', `?user_id=eq.${userId}&select=project_id`) || [];
+    const count = obrasActuales.length;
+    const isCEO = currentUser.role === '5U';
+
+    if (count >= 5 && !isCEO) {
+      msg.style.display='block'; msg.style.color='var(--error)';
+      msg.textContent=`${userName} ya tiene 5 obras asignadas. Límite máximo alcanzado.`;
+      return;
+    }
+    if (count >= 4 && !isCEO) {
+      await new Promise((res,rej)=>confirmarAccion(`⚠ ${userName} ya tiene ${count} obras. Agregar más puede generar sobrecarga. ¿Continuar?`,res));
+    }
+    if (count >= 3 && count < 4) {
+      msg.style.display='block'; msg.style.color='var(--warn)';
+      msg.textContent=`Aviso: ${userName} tendrá ${count+1} obras (cerca del límite recomendado).`;
+    }
+  }
+
+  // Si es responsable, verificar que no haya otro
+  if (isLead) {
+    const currentLeads = await db.query('project_team', `?project_id=eq.${projectId}&is_lead=eq.true`) || [];
+    if (currentLeads.length > 0) {
+      await new Promise((res,rej)=>confirmarAccion('Ya hay un responsable asignado. ¿Reemplazarlo?',res));
+      await db.patch('project_team', currentLeads[0].id, { is_lead: false });
+    }
+  }
+
+  msg.style.display='block'; msg.style.color='var(--goldDim)'; msg.textContent='Agregando...';
+  const result = await db.insert('project_team', {
+    project_id: projectId,
+    user_id: userId,
+    user_name: userName,
+    user_role: userRole,
+    is_lead: isLead
+  });
+
+  if (result) {
+    msg.style.color='var(--success)'; msg.textContent=`✓ ${userName} agregado al equipo.`;
+    // Notificar al usuario asignado
+    const p = PROJECTS.find(x=>x.id===projectId);
+    await sendNotification(userId, userRole,
+      `Fuiste asignado a una obra${isLead?' como Responsable':''}`,
+      `Te asignaron a "${p?.name||projectId}"${isLead?' como responsable principal':''}. Revisá tus obras asignadas.`,
+      'info'
+    );
+    setTimeout(()=>renderProjectDetail(), 800);
+  } else {
+    msg.style.color='var(--error)'; msg.textContent='Error al agregar.';
+  }
+}
+
+async function quitarEquipo(memberId, projectId) {
+  confirmarAccion('¿Quitar este miembro del equipo?', async () => {
+    await db.delete('project_team', memberId);
+    renderProjectDetail();
+  });
+}
+
+async function eliminarTarea(taskId, projectId) {
+  confirmarAccion('¿Eliminar esta etapa? Esta acción no se puede deshacer.', async () => {
+    await db.delete('tasks', taskId);
+    const p = PROJECTS.find(x=>x.id===projectId);
+    if (p) p.tasks = p.tasks.filter(t=>t.id!==taskId);
+    renderProjectDetail();
+  });
+}
+
+async function editarProyecto(projectId) {
+  const p = PROJECTS.find(x=>x.id===projectId);
+  if (!p) return;
+  const existing = document.getElementById('edit-proj-modal');
+  if (existing) existing.remove();
+  const modal = document.createElement('div');
+  modal.id = 'edit-proj-modal';
+  modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:999;display:flex;align-items:center;justify-content:center;padding:20px';
+  modal.innerHTML = `
+    <div style="background:var(--bgCard);border:1px solid var(--goldBorder);border-radius:4px;padding:28px;max-width:500px;width:100%">
+      <div style="font-size:14px;font-weight:700;color:var(--gold);margin-bottom:20px">Editar obra — ${p.id}</div>
+      <div class="field" style="margin-bottom:12px"><div class="field-label">Nombre</div><input class="field-input" id="ep-name" value="${p.name}"/></div>
+      <div class="field" style="margin-bottom:12px"><div class="field-label">Cliente</div><input class="field-input" id="ep-client" value="${p.client}"/></div>
+      <div class="field" style="margin-bottom:12px"><div class="field-label">Presupuesto ($)</div><input class="field-input" id="ep-budget" type="number" value="${p.budget||0}"/></div>
+      <div class="field" style="margin-bottom:12px"><div class="field-label">Descripción</div><textarea class="field-input" id="ep-desc" style="height:70px;resize:none">${p.description||''}</textarea></div>
+      <div id="ep-msg" style="font-size:11px;display:none;margin-bottom:12px"></div>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-primary" style="font-size:11px" onclick="guardarEdicionProyecto('${projectId}')">Guardar</button>
+        <button class="btn btn-ghost" style="font-size:11px" onclick="document.getElementById('edit-proj-modal').remove()">Cancelar</button>
+      </div>
+    </div>`;
+  document.body.appendChild(modal);
+}
+
+async function guardarEdicionProyecto(projectId) {
+  const name   = document.getElementById('ep-name').value.trim();
+  const client = document.getElementById('ep-client').value.trim();
+  const budget = parseFloat(document.getElementById('ep-budget').value) || 0;
+  const desc   = document.getElementById('ep-desc').value.trim();
+  const msg    = document.getElementById('ep-msg');
+  if (!name) { msg.style.display='block'; msg.style.color='var(--error)'; msg.textContent='El nombre no puede estar vacío.'; return; }
+  msg.style.display='block'; msg.style.color='var(--goldDim)'; msg.textContent='Guardando...';
+  const result = await db.patch('projects', projectId, { name, client, budget, description: desc });
+  if (result) {
+    const p = PROJECTS.find(x=>x.id===projectId);
+    if (p) { p.name=name; p.client=client; p.budget=budget; p.description=desc; }
+    msg.style.color='var(--success)'; msg.textContent='✓ Obra actualizada.';
+    setTimeout(()=>{ document.getElementById('edit-proj-modal').remove(); renderProjectDetail(); }, 1000);
+  } else { msg.style.color='var(--error)'; msg.textContent='Error al guardar.'; }
 }
 
 function backToProjects() { projectDetailId = null; renderProjects(); }
@@ -740,68 +1366,301 @@ function renderTasks() {
 function setTaskFilter(f) { taskFilter = f; renderTasks(); }
 
 // ─── TEAM ──────────────────────────────────────────────────────────────────────
-function renderTeam() {
-  document.getElementById('view-team').innerHTML = `
-    <div class="section-super">Módulo</div>
-    <div class="section-title">GESTIÓN DE PERSONAL</div>
-    <div class="grid-auto">
-      ${TEAM.map(m=>`<div class="card">
-        <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px">
-          <div style="width:40px;height:40px;border-radius:50%;background:var(--bgPanel);border:1px solid var(--goldBorder);display:flex;align-items:center;justify-content:center;font-size:16px;color:var(--gold)">${m.name.charAt(0)}</div>
-          <div>
-            <div style="font-size:13px;color:var(--text);font-weight:600">${m.name}</div>
-            <div style="font-size:10px;color:var(--goldDim);letter-spacing:.08em">Nivel ${m.level}</div>
-          </div>
-        </div>
-        <div style="font-size:11px;color:var(--textMuted);margin-bottom:12px">${m.area}</div>
-        ${divider()}
-        <div style="display:flex;justify-content:space-between;align-items:center">
-          <div>
-            <div style="font-size:22px;font-weight:700;color:var(--gold)">${m.tasks}</div>
-            <div style="font-size:9px;color:var(--textMuted);letter-spacing:.08em">TAREAS ACTIVAS</div>
-          </div>
-          <div style="padding:4px 12px;border-radius:2px;font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:${loadColor(m.load)};border:1px solid ${loadColor(m.load)};background:${loadColor(m.load)}18">
-            ${m.load==='alta'?'Saturado':m.load==='media'?'Activo':'Disponible'}
-          </div>
-        </div>
-      </div>`).join('')}
-    </div>`;
+async function renderTeam() {
+  const area  = getArea(currentUser.role);
+  const level = getLevel(currentUser.role);
+  const el    = document.getElementById('view-team');
+  el.innerHTML = `<div class="section-super">Módulo</div><div class="section-title">PERSONAL</div><div style="color:var(--textMuted);font-size:12px;padding:20px;text-align:center">Cargando...</div>`;
+
+  // Determinar filtro según rol
+  let query = '?select=id,name,role,province,region&role=neq.cliente&order=role';
+  if (area==='U'&&level===1) {
+    if (currentUser.province) query += `&province=eq.${encodeURIComponent(currentUser.province)}`;
+  } else if (area==='U'&&level===2) {
+    if (currentUser.region) query += `&region=eq.${encodeURIComponent(currentUser.region)}`;
+  }
+
+  const users = await db.query('users', query) || [];
+
+  // Agrupar por región y provincia para CEO/regionales
+  const REGIONES = {Norte:['Catamarca','Jujuy','Salta','Santiago del Estero','Chaco','Formosa','Misiones','Corrientes','Tucumán'],Centro:['Córdoba','La Rioja','San Luis','Mendoza','San Juan','Santa Fe','Entre Ríos'],Sur:['Buenos Aires','La Pampa','Neuquén','Río Negro','Chubut','Santa Cruz','Tierra del Fuego']};
+  const AREA_NAMES = {A:'Mano de Obra',E:'Dibujo Técnico',I:'Dirección de Obra',O:'Administración',U:'Gobierno'};
+
+  // Calcular obras activas por usuario
+  const teamData = await db.query('project_team','?select=user_id,project_id') || [];
+  const obrasPorUser = {};
+  teamData.forEach(t=>{ obrasPorUser[t.user_id]=(obrasPorUser[t.user_id]||0)+1; });
+
+  // Agrupar
+  let html = `<div class="section-super">Módulo</div><div class="section-title">PERSONAL</div><div class="section-sub">${users.length} empleados</div>`;
+
+  if (level>=3&&area==='U') {
+    // CEO y regionales: ver por región → provincia
+    const regions = level===2 ? [currentUser.region] : ['Norte','Centro','Sur'];
+    regions.forEach(region=>{
+      const provincias = REGIONES[region] || [];
+      const regionUsers = users.filter(u=>u.region===region);
+      if (!regionUsers.length) return;
+      html += `<div style="margin-bottom:28px">
+        <div style="font-size:13px;font-weight:700;color:var(--gold);letter-spacing:.12em;text-transform:uppercase;margin-bottom:16px;padding-bottom:8px;border-bottom:1px solid var(--goldBorder)">Nodo ${region} — ${regionUsers.length} personas</div>`;
+      provincias.forEach(prov=>{
+        const provUsers = regionUsers.filter(u=>u.province===prov);
+        if (!provUsers.length) return;
+        html += `<div style="margin-bottom:16px">
+          <div style="font-size:11px;color:var(--goldDim);letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px">${prov}</div>
+          <div class="col-stack-xs">${provUsers.map(u=>userCard(u,obrasPorUser)).join('')}</div>
+        </div>`;
+      });
+      html += `</div>`;
+    });
+  } else {
+    // Vista simple por área
+    const areas = [...new Set(users.map(u=>u.role?u.role[1]:null).filter(Boolean))];
+    areas.forEach(a=>{
+      const aUsers = users.filter(u=>u.role&&u.role[1]===a);
+      if (!aUsers.length) return;
+      html += `<div style="margin-bottom:20px">
+        <div style="font-size:11px;color:var(--goldDim);letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px">${AREA_NAMES[a]||a}</div>
+        <div class="col-stack-xs">${aUsers.map(u=>userCard(u,obrasPorUser)).join('')}</div>
+      </div>`;
+    });
+  }
+
+  el.innerHTML = html;
+}
+
+function userCard(u, obrasPorUser) {
+  const obras = obrasPorUser[u.id] || 0;
+  const cabeceras = ['4I','5I','4U','5U','5A','5E'];
+  const esCab = cabeceras.includes(u.role);
+  const loadColor = esCab ? (obras>=5?'var(--error)':obras>=4?'var(--warn)':obras>=3?'var(--goldDim)':'var(--success)') : 'var(--textMuted)';
+  const loadLabel = esCab ? (obras>=5?'Sobrecargado':obras>=4?'Al límite':obras>=3?'Cargado':'Disponible') : '';
+  return `<div class="card" style="display:flex;align-items:center;gap:12px">
+    <div style="width:36px;height:36px;border-radius:50%;background:var(--bgPanel);border:1px solid var(--goldBorder);display:flex;align-items:center;justify-content:center;font-size:14px;color:var(--gold);flex-shrink:0">${u.name?.charAt(0)||'?'}</div>
+    <div style="flex:1">
+      <div style="font-size:13px;color:var(--text);font-weight:600">${u.name}</div>
+      <div style="font-size:10px;color:var(--textMuted)">${u.role} · ${ROLE_LABELS[u.role]||u.role} · ${u.province||'—'}</div>
+    </div>
+    ${esCab?`<div style="text-align:right;flex-shrink:0">
+      <div style="font-size:12px;font-weight:700;color:${loadColor}">${obras} obra${obras!==1?'s':''}</div>
+      <div style="font-size:9px;color:${loadColor};text-transform:uppercase;letter-spacing:.06em">${loadLabel}</div>
+    </div>`:''}
+  </div>`;
 }
 
 // ─── NOTIFICATIONS ────────────────────────────────────────────────────────────
-function renderNotifications() {
-  const notifs = [
-    {type:'avance', text:"OB-001: Lucas Díaz marcó avance en 'Mamposterías internas'", time:'Hace 2h', read:false},
-    {type:'alerta', text:"OB-002: Tarea 'Instalación eléctrica' sin empleado asignado", time:'Hace 5h', read:false},
-    {type:'info',   text:'OB-003 cambió a estado PAUSADA', time:'Hace 1d', read:true},
-    {type:'foto',   text:"OB-001: 2 fotos nuevas en 'Mamposterías internas'", time:'Hace 2h', read:false},
-    {type:'info',   text:'Cliente Martín Pérez revisó el avance de su obra', time:'Hace 1d', read:true},
-  ];
-  const icons  = {avance:'◈',alerta:'⚠',info:'◉',foto:'📷'};
-  const colors = {avance:'var(--success)',alerta:'var(--error)',info:'var(--goldDim)',foto:'var(--gold)'};
-  const viewId = currentUser.role === '5U' ? 'notifications' : currentUser.role === 'cliente' ? 'notifications' : 'notifications';
-  document.getElementById(`view-${currentView}`).innerHTML = `
+async function renderNotifications() {
+  const el = document.getElementById('view-notifications');
+  if (!el) return;
+  const area  = getArea(currentUser.role);
+  const level = getLevel(currentUser.role);
+  const canBajarLinea = level >= 4;
+  const canDelete = currentUser.role === '5U';
+
+  el.innerHTML = `
     <div class="section-super">Sistema</div>
     <div class="section-title">ALERTAS Y NOTIFICACIONES</div>
-    <div class="col-stack-xs">
-      ${notifs.map(n=>`<div class="card notif-row" style="opacity:${n.read?'.6':'1'}">
-        <div class="notif-icon" style="color:${colors[n.type]}">${icons[n.type]}</div>
-        <div style="flex:1">
-          <div style="font-size:12px;color:${n.read?'var(--textMuted)':'var(--text)'};margin-bottom:2px">${n.text}</div>
-          <div style="font-size:10px;color:var(--textMuted)">${n.time}</div>
-        </div>
-        ${!n.read?`<div class="notif-dot"></div>`:''}
-      </div>`).join('')}
+
+    ${canBajarLinea ? `
+    <div class="card" style="margin-bottom:24px">
+      <div style="font-size:12px;font-weight:700;color:var(--gold);letter-spacing:.12em;text-transform:uppercase;margin-bottom:12px">📢 Bajada de línea</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
+        <input class="field-input" id="bl-title" placeholder="Título del anuncio"/>
+        <select class="field-input" id="bl-target">
+          <option value="area">Mi área completa</option>
+          ${level>=2?'<option value="region">Mi región</option>':''}
+          ${level>=4?'<option value="all">Todo el sistema</option>':''}
+        </select>
+      </div>
+      <textarea class="field-input" id="bl-body" placeholder="Contenido del mensaje..." style="height:70px;resize:none;margin-bottom:8px"></textarea>
+      <div id="bl-msg" style="font-size:11px;display:none;margin-bottom:8px"></div>
+      <button class="btn btn-primary" style="font-size:11px" onclick="enviarBajadaLinea()">Enviar anuncio</button>
+    </div>` : ''}
+
+    <div class="col-stack-xs" id="notif-list">
+      <div style="font-size:12px;color:var(--textMuted);padding:20px;text-align:center">Cargando...</div>
     </div>`;
+
+  await loadNotifications(canDelete);
+}
+
+async function loadNotifications(canDelete) {
+  const rows = await db.query('notifications', `?user_id=eq.${currentUser.id}&order=created_at.desc&limit=50`) || [];
+  const list = document.getElementById('notif-list');
+  if (!list) return;
+
+  const icons  = {avance:'◈', alerta:'⚠', info:'◉', foto:'📷', pago:'$', plano:'◇', mensaje:'✉', anuncio:'📢'};
+  const colors = {avance:'var(--success)', alerta:'var(--error)', info:'var(--goldDim)', foto:'var(--gold)', pago:'var(--success)', plano:'var(--goldDim)', mensaje:'var(--gold)', anuncio:'var(--warn)'};
+
+  if (rows.length === 0) {
+    list.innerHTML = `<div style="font-size:12px;color:var(--textMuted);padding:20px;text-align:center">Sin notificaciones por ahora</div>`;
+    return;
+  }
+
+  list.innerHTML = rows.map(n => {
+    const t = n.type || 'info';
+    const time = n.created_at ? new Date(n.created_at).toLocaleString('es-AR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}) : '';
+    const color = colors[t] || 'var(--goldDim)';
+    const icon  = icons[t]  || '◉';
+    return `<div class="card" id="notif-${n.id}" style="opacity:${n.read?'.65':'1'};transition:opacity .2s">
+      <div style="display:flex;align-items:flex-start;gap:12px">
+        <div style="font-size:18px;color:${color};flex-shrink:0;margin-top:2px">${icon}</div>
+        <div style="flex:1;min-width:0">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:4px">
+            <div style="font-size:13px;font-weight:${n.read?'400':'700'};color:${n.read?'var(--textMuted)':'var(--text)'}">${n.title}</div>
+            <div style="display:flex;gap:6px;flex-shrink:0">
+              ${!n.read?`<button class="btn btn-ghost" style="font-size:9px;padding:2px 8px" onclick="markNotifRead('${n.id}')">Leído</button>`:''}
+              ${canDelete?`<button class="btn btn-ghost" style="font-size:9px;padding:2px 8px;color:var(--error)" onclick="deleteNotif('${n.id}')">✕</button>`:''}
+            </div>
+          </div>
+          ${n.body?`
+          <div style="font-size:12px;color:var(--textMuted);margin-bottom:6px;line-height:1.5">${n.body}</div>`:''}
+          <div style="font-size:10px;color:var(--textMuted)">${time}${n.role_target?' · Para: '+n.role_target:''}</div>
+        </div>
+        ${!n.read?`<div style="width:8px;height:8px;border-radius:50%;background:${color};flex-shrink:0;margin-top:6px"></div>`:''}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function toggleMobileMenu() {
+  document.getElementById('sidebar').classList.toggle('open');
+  document.getElementById('mobile-overlay').classList.toggle('show');
+}
+function closeMobileMenu() {
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('mobile-overlay').classList.remove('show');
+}
+
+function confirmarAccion(mensaje, callback) {
+  const ex = document.getElementById('confirm-modal');
+  if (ex) ex.remove();
+  const m = document.createElement('div');
+  m.id = 'confirm-modal';
+  m.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px';
+  m.innerHTML = `<div style="background:var(--bgCard);border:1px solid var(--goldBorder);border-radius:4px;padding:28px;max-width:380px;width:100%">
+    <div style="font-size:13px;color:var(--text);margin-bottom:20px;line-height:1.5">${mensaje}</div>
+    <div style="display:flex;gap:8px">
+      <button class="btn btn-primary" style="font-size:11px" id="confirm-ok">Confirmar</button>
+      <button class="btn btn-ghost" style="font-size:11px" onclick="document.getElementById('confirm-modal').remove()">Cancelar</button>
+    </div>
+  </div>`;
+  document.body.appendChild(m);
+  document.getElementById('confirm-ok').onclick = () => { m.remove(); callback(); };
+}
+
+async function markNotifRead(id) {
+  await db.patch('notifications', id, { read: true });
+  const el = document.getElementById('notif-'+id);
+  if (el) el.style.opacity = '.65';
+  updateNotifBadge();
+}
+
+async function deleteNotif(id) {
+  await db.delete('notifications', id);
+  const el = document.getElementById('notif-'+id);
+  if (el) el.remove();
+  updateNotifBadge();
+}
+
+async function enviarBajadaLinea() {
+  const title  = document.getElementById('bl-title').value.trim();
+  const body   = document.getElementById('bl-body').value.trim();
+  const target = document.getElementById('bl-target').value;
+  const msg    = document.getElementById('bl-msg');
+  const area   = getArea(currentUser.role);
+  const level  = getLevel(currentUser.role);
+
+  if (!title || !body) { msg.style.display='block'; msg.style.color='var(--error)'; msg.textContent='Completá título y contenido.'; return; }
+
+  msg.style.display='block'; msg.style.color='var(--goldDim)'; msg.textContent='Enviando...';
+
+  let users = [];
+  if (target === 'all') {
+    users = await db.query('users','?select=id') || [];
+  } else if (target === 'region') {
+    const reg = currentUser.region||'';
+    users = reg ? await db.query('users',`?region=eq.${encodeURIComponent(reg)}&select=id`) || [] : [];
+  } else {
+    // Solo mi área en mi localidad
+    const prov = currentUser.province||'';
+    const allUsers = await db.query('users',`?select=id,role,province`) || [];
+    users = allUsers.filter(u => u.role && u.role.endsWith(area) && (!prov || u.province===prov));
+  }
+
+  for (const u of users) {
+    await sendNotification(u.id, target, title, body, 'anuncio');
+  }
+
+  msg.style.color='var(--success)'; msg.textContent=`✓ Anuncio enviado a ${users.length} usuarios.`;
+  document.getElementById('bl-title').value='';
+  document.getElementById('bl-body').value='';
+  setTimeout(()=>loadNotifications(currentUser.role==='5U'), 1000);
+}
+
+async function sendNotification(userId, roleTarget, title, body, type='info') {
+  if (!userId && !roleTarget) return;
+  await db.insert('notifications', { user_id: userId, role_target: roleTarget, title, body, type, read: false });
+}
+
+// Notificar a todos los usuarios de un rol específico
+async function notifyByRole(role, title, body, type='info') {
+  const users = await db.query('users', `?role=eq.${role}&select=id`) || [];
+  for (const u of users) {
+    await sendNotification(u.id, role, title, body, type);
+  }
+}
+
+// Notificar a todos los usuarios de un área (ej: 'I' notifica a 1I,2I,3I,4I,5I)
+async function notifyByArea(area, title, body, type='info') {
+  const users = await db.query('users', `?select=id,role`) || [];
+  const targets = users.filter(u => u.role && u.role.endsWith(area));
+  for (const u of targets) {
+    await sendNotification(u.id, u.role, title, body, type);
+  }
+}
+
+// Notificar al equipo de una obra
+async function notifyProjectTeam(projectId, title, body, type='info') {
+  const team = await db.query('project_team', `?project_id=eq.${projectId}&select=user_id`) || [];
+  for (const m of team) {
+    await sendNotification(m.user_id, null, title, body, type);
+  }
+}
+
+// Notificar al cliente de una obra
+async function notifyClient(projectId, title, body, type='info') {
+  const p = PROJECTS.find(x=>x.id===projectId);
+  if (!p) return;
+  const users = await db.query('users', `?name=eq.${encodeURIComponent(p.client)}&select=id`) || [];
+  if (users.length > 0) await sendNotification(users[0].id, 'cliente', title, body, type);
 }
 
 // ─── CLIENT VIEW ──────────────────────────────────────────────────────────────
-function renderMyProject() {
-  const p = PROJECTS[0];
-  document.getElementById('view-myproject').innerHTML = `
+async function renderMyProject() {
+  const el = document.getElementById('view-myproject');
+  el.innerHTML = `<div class="section-super">Mi Obra</div><div class="section-title">Cargando...</div>`;
+  
+  const p = PROJECTS.find(x => x.client === currentUser.name);
+  if (!p) {
+    el.innerHTML = `<div class="section-super">Mi Obra</div><div class="section-title">SIN OBRA ASIGNADA</div><div class="section-sub">Contactá al estudio para más información.</div>`;
+    return;
+  }
+  
+  // Cargar fotos de la obra desde Supabase
+  const photos = await db.query('photos', `?project_id=eq.${p.id}&order=created_at.desc`) || [];
+  const docs   = await db.query('documents', `?project_id=eq.${p.id}&order=created_at.desc`) || [];
+  const movs   = await db.query('movements', `?project_id=eq.${p.id}&order=created_at.desc`) || [];
+  
+  const pagados  = movs.filter(m=>m.type==='ingreso').reduce((a,m)=>a+Number(m.amount),0);
+  const pendientes = movs.filter(m=>m.type==='egreso' && m.status==='pendiente').reduce((a,m)=>a+Number(m.amount),0);
+  const fmt = n => '$'+Number(n).toLocaleString('es-AR');
+
+  el.innerHTML = `
     <div class="section-super">Mi Obra</div>
     <div class="section-title">${p.name}</div>
-    <div class="section-sub">ID: ${p.id} · Zona ${p.zone}</div>
+    <div class="section-sub">ID: ${p.id} · ${p.province||p.zone||''} · ${badge(p.status)}</div>
+
     <div class="ornamental" style="margin-bottom:28px">
       <div class="orn-line-top"></div><div class="orn-line-bottom"></div>
       <div class="orn-line-left"></div><div class="orn-line-right"></div>
@@ -810,65 +1669,1607 @@ function renderMyProject() {
       <div class="corner bl"><svg width="24" height="24" viewBox="0 0 24 24"><path d="M22,2 L22,16 Q22,22 16,22 L2,22" fill="none" stroke="#A89060" stroke-width="1.5"/><circle cx="2" cy="22" r="2.5" fill="#D9C49D" opacity=".6"/></svg></div>
       <div class="corner br"><svg width="24" height="24" viewBox="0 0 24 24"><path d="M22,22 L8,22 Q2,22 2,16 L2,2" fill="none" stroke="#A89060" stroke-width="1.5"/><circle cx="22" cy="22" r="2.5" fill="#D9C49D" opacity=".6"/></svg></div>
       <div class="ornamental-inner" style="padding:28px;text-align:center">
-        <div style="font-size:11px;color:var(--goldDim);letter-spacing:.15em;text-transform:uppercase;margin-bottom:8px">Avance Total del Proyecto</div>
+        <div style="font-size:11px;color:var(--goldDim);letter-spacing:.15em;text-transform:uppercase;margin-bottom:8px">Avance Total</div>
         <div style="font-size:64px;font-weight:700;color:var(--gold);line-height:1">${p.progress}%</div>
         <div style="margin-top:16px">${progressBar(p.progress,10)}</div>
-        <div style="margin-top:12px;font-size:11px;color:var(--textMuted)">${p.tasks.filter(t=>t.status==='Cerrado').length} de ${p.tasks.length} tareas completadas</div>
+        <div style="margin-top:12px;font-size:11px;color:var(--textMuted)">${p.tasks.filter(t=>t.status==='Cerrado').length} de ${p.tasks.length} etapas completadas</div>
       </div>
     </div>
+
+    <div class="grid-3" style="margin-bottom:28px">
+      <div class="card" style="text-align:center">
+        <div style="font-size:22px;color:var(--success);margin-bottom:4px">↑</div>
+        <div style="font-size:16px;font-weight:700;color:var(--success)">${fmt(pagados)}</div>
+        <div style="font-size:10px;color:var(--textMuted);text-transform:uppercase;letter-spacing:.08em;margin-top:4px">Pagado</div>
+      </div>
+      <div class="card" style="text-align:center">
+        <div style="font-size:22px;color:var(--warn);margin-bottom:4px">⏳</div>
+        <div style="font-size:16px;font-weight:700;color:var(--warn)">${fmt(pendientes)}</div>
+        <div style="font-size:10px;color:var(--textMuted);text-transform:uppercase;letter-spacing:.08em;margin-top:4px">Pendiente</div>
+      </div>
+      <div class="card" style="text-align:center">
+        <div style="font-size:22px;color:var(--goldDim);margin-bottom:4px">📄</div>
+        <div style="font-size:16px;font-weight:700;color:var(--goldDim)">${docs.length}</div>
+        <div style="font-size:10px;color:var(--textMuted);text-transform:uppercase;letter-spacing:.08em;margin-top:4px">Documentos</div>
+      </div>
+    </div>
+
     <div style="margin-bottom:16px;font-size:12px;font-weight:700;color:var(--gold);letter-spacing:.12em;text-transform:uppercase">Etapas del Proyecto</div>
     <div class="col-stack-xs" style="margin-bottom:28px">
-      ${p.tasks.map(t=>`<div class="card">
+      ${p.tasks.map(t=>`<div class="card clickable" onclick="showTaskPhotos('${t.id}','${t.name.replace(/'/g,"\\'")}')">
         <div style="display:flex;align-items:center;gap:12px">
           <div style="width:10px;height:10px;border-radius:50%;background:${STATUS_COLORS[t.status]||'var(--goldDim)'};flex-shrink:0"></div>
           <div style="flex:1;font-size:13px;color:var(--text)">${t.name}</div>
           ${badge(t.status)}
+          <span style="font-size:10px;color:var(--textMuted)">📷 ${t.photos||0}</span>
         </div>
       </div>`).join('')}
     </div>
-    <div style="margin-bottom:16px;font-size:12px;font-weight:700;color:var(--gold);letter-spacing:.12em;text-transform:uppercase">Últimas Actualizaciones</div>
-    ${p.updates.map(u=>`<div style="display:flex;gap:16px;padding-bottom:14px;border-bottom:1px solid var(--goldBorder);margin-bottom:14px">
-      <div style="width:6px;height:6px;border-radius:50%;background:var(--goldDim);margin-top:5px;flex-shrink:0"></div>
-      <div>
-        <div style="font-size:12px;color:var(--text);margin-bottom:4px">${u.text}</div>
-        <div style="font-size:10px;color:var(--textMuted)">${u.date}</div>
-      </div>
-    </div>`).join('')}
+
+    ${docs.length > 0 ? `
+    <div style="margin-bottom:16px;font-size:12px;font-weight:700;color:var(--gold);letter-spacing:.12em;text-transform:uppercase">Documentos</div>
+    <div class="col-stack-xs" style="margin-bottom:28px">
+      ${docs.map(d=>`<div class="card" style="display:flex;align-items:center;gap:12px">
+        <div style="font-size:20px">📄</div>
+        <div style="flex:1">
+          <div style="font-size:12px;color:var(--text)">${d.name}</div>
+          <div style="font-size:10px;color:var(--textMuted)">${d.type||''} ${d.version||''} · ${d.created_at?new Date(d.created_at).toLocaleDateString('es-AR'):''}</div>
+        </div>
+        ${d.url?`<a href="${d.url}" target="_blank" class="btn btn-outline" style="font-size:10px;padding:4px 10px">Ver</a>`:''}
+      </div>`).join('')}
+    </div>` : ''}
+
+    ${photos.length > 0 ? `
+    <div style="margin-bottom:16px;font-size:12px;font-weight:700;color:var(--gold);letter-spacing:.12em;text-transform:uppercase">Fotos de Avance</div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;margin-bottom:28px">
+      ${photos.map(ph=>`<div class="card" style="padding:8px">
+        ${ph.url?`<img src="${ph.url}" style="width:100%;border-radius:2px;margin-bottom:6px;object-fit:cover;height:120px" onerror="this.style.display='none'" />`:'<div style="height:120px;background:var(--bgPanel);border-radius:2px;margin-bottom:6px;display:flex;align-items:center;justify-content:center;font-size:24px">📷</div>'}
+        ${ph.observation?`<div style="font-size:10px;color:var(--textMuted)">${ph.observation}</div>`:''}
+        <div style="font-size:9px;color:var(--textMuted);margin-top:4px">${ph.created_at?new Date(ph.created_at).toLocaleDateString('es-AR'):''}</div>
+      </div>`).join('')}
+    </div>` : ''}
+
     ${divider()}
-    <div style="text-align:center;font-size:10px;color:var(--textMuted);letter-spacing:.1em;font-style:italic">Acompañamiento técnico de obra, de principio a fin</div>`;
+    <div style="text-align:center;font-size:10px;color:var(--textMuted);letter-spacing:.1em;font-style:italic">Acompañamiento técnico de obra, de principio a fin</div>
+
+    <div id="task-photos-modal" class="hidden" style="position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:999;display:flex;align-items:center;justify-content:center;padding:20px">
+      <div style="background:var(--bgCard);border:1px solid var(--goldBorder);border-radius:4px;padding:24px;max-width:600px;width:100%;max-height:80vh;overflow-y:auto">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+          <div style="font-size:14px;font-weight:700;color:var(--gold)" id="modal-task-name"></div>
+          <button class="btn btn-ghost" style="padding:4px 10px" onclick="document.getElementById('task-photos-modal').classList.add('hidden')">✕</button>
+        </div>
+        <div id="modal-photos-content"><div style="color:var(--textMuted);font-size:12px">Cargando fotos...</div></div>
+      </div>
+    </div>`;
 }
 
-// ─── EMPLOYEE VIEW ────────────────────────────────────────────────────────────
-function renderMyTasks() {
+async function showTaskPhotos(taskId, taskName) {
+  const modal = document.getElementById('task-photos-modal');
+  if (!modal) return;
+  modal.classList.remove('hidden');
+  document.getElementById('modal-task-name').textContent = taskName;
+  const photos = await db.query('photos', `?task_id=eq.${taskId}&order=created_at.desc`) || [];
+  const content = document.getElementById('modal-photos-content');
+  if (photos.length === 0) { content.innerHTML = '<div style="color:var(--textMuted);font-size:12px;padding:20px;text-align:center">Sin fotos cargadas para esta etapa</div>'; return; }
+  content.innerHTML = photos.map(ph=>`<div style="margin-bottom:16px;padding-bottom:16px;border-bottom:1px solid var(--goldBorder)">
+    ${ph.url?`<img src="${ph.url}" style="width:100%;border-radius:2px;margin-bottom:8px;max-height:300px;object-fit:cover" />`:''}
+    ${ph.observation?`<div style="font-size:12px;color:var(--text);margin-bottom:4px">${ph.observation}</div>`:''}
+    <div style="font-size:10px;color:var(--textMuted)">${ph.created_at?new Date(ph.created_at).toLocaleString('es-AR'):''}</div>
+  </div>`).join('');
+}
+
+// ─── EMPLOYEE VIEW (ÁREA A) ────────────────────────────────────────────────────
+async function renderMyTasks() {
+  const area = getArea(currentUser.role) || 'A';
+  const level = getLevel(currentUser.role);
+  const el = document.getElementById('view-mytasks');
+  
   const myTasks = PROJECTS.flatMap(p =>
-    p.tasks.filter(t=>t.level.includes('A')).map(t=>({...t,project:p.name}))
-  ).slice(0,3);
-  document.getElementById('view-mytasks').innerHTML = `
+    p.tasks.filter(t => t.level && t.level.includes(area)).map(t=>({...t,project:p.name,projectId:p.id}))
+  );
+
+  const roleLabel = ROLE_LABELS[currentUser.role] || currentUser.role;
+
+  // Área E — dibujantes: planos por proyecto vinculados a etapas
+  if (area === 'E') {
+    // Solo 1E puede ver planos (lectura) — 2E+ puede subir
+    const canUpload = level >= 2;
+    const canApprove = level >= 4;
+    const canChangeState = level >= 2;
+
+    // Cargar documentos reales de Supabase
+    const allDocs = await db.query('documents','?type=eq.plano&order=created_at.desc') || [];
+
+    el.innerHTML = `
+      <div class="section-super">Mis Planos</div>
+      <div class="section-title">TRABAJO ASIGNADO</div>
+      <div class="section-sub">${roleLabel} · ${currentUser.name}</div>
+      ${PROJECTS.map(p => {
+        const eTasks = p.tasks.filter(t=>t.level&&t.level.includes('E'));
+        if (!eTasks.length) return '';
+        const projDocs = allDocs.filter(d=>d.project_id===p.id);
+        return `<div style="margin-bottom:28px">
+          <div style="font-size:11px;color:var(--goldDim);letter-spacing:.1em;text-transform:uppercase;margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid var(--goldBorder)">
+            ${p.name} · ${p.id} · ${badge(p.status)}
+          </div>
+          <div class="col-stack-xs">
+            ${eTasks.map(t=>{
+              const taskDocs = projDocs.filter(d=>d.task_id===t.id||(!d.task_id&&p.id===d.project_id));
+              return `<div class="card">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+                  <div>
+                    <div style="font-size:13px;color:var(--text);font-weight:600">${t.name}</div>
+                    <div style="font-size:10px;color:var(--textMuted)">Etapa ${t.id} · Peso ${t.weight||0}%</div>
+                  </div>
+                  ${badge(t.status)}
+                </div>
+                ${taskDocs.length>0?`
+                <div style="margin-bottom:10px">
+                  <div style="font-size:10px;color:var(--goldDim);margin-bottom:6px;text-transform:uppercase;letter-spacing:.08em">Planos cargados</div>
+                  ${taskDocs.map(d=>`<div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--bgPanel)">
+                    <span style="font-size:16px">📄</span>
+                    <div style="flex:1">
+                      <div style="font-size:11px;color:var(--text)">${d.name} <span style="color:var(--goldDim)">${d.version||'v1'}</span></div>
+                      <div style="font-size:9px;color:var(--textMuted)">${d.created_at?new Date(d.created_at).toLocaleDateString('es-AR'):''}</div>
+                    </div>
+                    ${d.url?`<a href="${d.url}" target="_blank" class="btn btn-ghost" style="font-size:9px;padding:3px 8px">Ver →</a>`:'<span style="font-size:9px;color:var(--textMuted)">Sin link</span>'}
+                  </div>`).join('')}
+                </div>`:''}
+                <div style="display:flex;gap:8px;flex-wrap:wrap">
+                  ${canChangeState&&t.status==='Haciendo'?`<button class="btn btn-outline" style="font-size:10px;padding:5px 12px" onclick="changeTaskStatus('${t.id}','Revisión','view-mytasks')">Enviar a revisión</button>`:''}
+                  ${canChangeState&&t.status==='Pendiente'?`<button class="btn btn-ghost" style="font-size:10px;padding:5px 12px" onclick="changeTaskStatus('${t.id}','Haciendo','view-mytasks')">▶ Iniciar</button>`:''}
+                  ${canApprove&&t.status==='Revisión'?`<button class="btn btn-primary" style="font-size:10px;padding:5px 12px" onclick="changeTaskStatus('${t.id}','Cerrado','view-mytasks')">✓ Aprobar plano</button>`:''}
+                  ${canUpload&&t.status!=='Cerrado'?`<button class="btn btn-ghost" style="font-size:10px;padding:5px 12px" onclick="showUploadDoc('${t.id}','${p.id}')">+ Subir plano</button>`:''}
+                </div>
+              </div>`;
+            }).join('')}
+          </div>
+        </div>`;
+      }).join('')}
+      <div id="upload-doc-zone" class="hidden card" style="margin-top:16px;border-color:var(--goldBorder)">
+        <div style="font-size:12px;font-weight:700;color:var(--gold);margin-bottom:12px">Subir plano</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
+          <input class="field-input" id="doc-name" placeholder="Nombre del plano (ej: Planta baja)"/>
+          <input class="field-input" id="doc-version" placeholder="Versión (v1, v2, v3...)"/>
+        </div>
+        <input class="field-input" id="doc-url" placeholder="URL del archivo (Drive, Dropbox...) o subí uno abajo" style="margin-bottom:8px"/>
+        <div style="font-size:10px;color:var(--textMuted);margin-bottom:4px">O subí un archivo directamente:</div>
+        <input type="file" id="doc-file" accept=".pdf,.dwg,.jpg,.png,.docx" style="margin-bottom:8px;color:var(--textMuted);font-size:11px;width:100%"/>
+        <div id="doc-msg" style="font-size:11px;display:none;margin-bottom:8px"></div>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-primary" style="font-size:10px" onclick="submitDoc()">Guardar plano</button>
+          <button class="btn btn-ghost" style="font-size:10px" onclick="document.getElementById('upload-doc-zone').classList.add('hidden')">Cancelar</button>
+        </div>
+      </div>`;
+    return;
+  }
+
+  // Área A, I, otros
+  const canAlert = area === 'A' && level >= 3; // 3A+ puede mandar alerta roja
+
+  el.innerHTML = `
     <div class="section-super">Mis Tareas</div>
     <div class="section-title">TRABAJO ASIGNADO</div>
-    <div class="section-sub">Nivel ${currentUser.role} · ${currentUser.name}</div>
+    <div class="section-sub">${roleLabel} · ${currentUser.name}</div>
+
+    ${canAlert ? `
+    <div class="card" style="margin-bottom:20px;border-color:var(--error)">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+        <div style="font-size:20px">🚨</div>
+        <div style="font-size:12px;font-weight:700;color:var(--error);letter-spacing:.1em;text-transform:uppercase">Alerta de Obra</div>
+      </div>
+      <select class="field-input" id="alert-type" style="margin-bottom:8px;border-color:var(--error)">
+        <option value="">Tipo de alerta...</option>
+        <option value="material">Falta de materiales</option>
+        <option value="clima">Problema climático</option>
+        <option value="accidente">Accidente / Seguridad</option>
+        <option value="otro">Otro problema crítico</option>
+      </select>
+      <textarea class="field-input" id="alert-body" placeholder="Describí el problema con detalle..." style="height:60px;resize:none;margin-bottom:8px;border-color:var(--error)"></textarea>
+      <div id="alert-msg" style="font-size:11px;display:none;margin-bottom:8px"></div>
+      <button class="btn" style="font-size:11px;background:var(--error);color:#fff;border:none;padding:8px 20px;cursor:pointer;border-radius:2px;font-weight:700;letter-spacing:.08em" onclick="enviarAlertaObra()">🚨 ENVIAR ALERTA</button>
+    </div>` : ''}
+
+    ${myTasks.length===0?`<div class="card" style="text-align:center;padding:32px;color:var(--textMuted)">Sin tareas asignadas a tu área</div>`:''}
     <div class="col-stack">
       ${myTasks.map(t=>`<div class="card" id="task-card-${t.id}">
         <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px">
-          <div>
+          <div style="flex:1">
             <div style="font-size:14px;color:var(--text);font-weight:700;margin-bottom:4px">${t.name}</div>
-            <div style="font-size:11px;color:var(--textMuted)">${t.project}</div>
+            <div style="font-size:11px;color:var(--textMuted)">${t.project} · ${t.id}</div>
           </div>
           ${badge(t.status)}
         </div>
         ${divider()}
-        <div style="display:flex;gap:10px;align-items:center">
-          <span style="font-size:10px;color:${t.photos>0?'var(--goldDim)':'var(--error)'};flex:1">${t.photos>0?`📷 ${t.photos} fotos cargadas`:'⚠ Fotos requeridas'}</span>
-          <button class="btn btn-outline" style="font-size:10px;padding:6px 12px" onclick="toggleUpload('${t.id}')">+ Foto</button>
-          ${t.status!=='Cerrado'?`<button class="btn btn-primary" style="font-size:10px;padding:6px 12px" onclick="markProgress('${t.id}')">Marcar avance</button>`:''}
+        <div style="display:flex;gap:16px;margin-bottom:10px;flex-wrap:wrap">
+          <span style="font-size:10px;color:${t.photos>0?'var(--goldDim)':'var(--textMuted)'}">📷 ${t.photos>0?t.photos+' fotos':'Sin fotos'}</span>
+          <span style="font-size:10px;color:var(--textMuted)">Peso: ${t.weight||0}%</span>
         </div>
-        <div id="upload-${t.id}" class="upload-zone hidden">
-          <div style="font-size:22px;margin-bottom:8px">📷</div>
-          <div style="font-size:11px;color:var(--goldDim);margin-bottom:12px">Seleccionar fotografías de avance de obra</div>
-          <button class="btn btn-outline" style="font-size:10px">Elegir archivos</button>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn btn-outline" style="font-size:10px;padding:6px 12px" onclick="toggleUpload('${t.id}')">📷 Foto</button>
+          ${t.status==='Pendiente'?`<button class="btn btn-ghost" style="font-size:10px;padding:6px 12px" onclick="changeTaskStatus('${t.id}','Haciendo','view-mytasks')">▶ Iniciar</button>`:''}
+          ${t.status==='Haciendo'?`<button class="btn btn-primary" style="font-size:10px;padding:6px 12px" onclick="changeTaskStatus('${t.id}','Revisión','view-mytasks')">✓ Marcar fin</button>`:''}
+          ${t.status==='Revisión'&&area==='I'?`
+          <button class="btn btn-primary" style="font-size:10px;padding:6px 12px" onclick="changeTaskStatus('${t.id}','Cerrado','view-mytasks')">✓ Aprobar</button>
+          <button class="btn btn-outline" style="font-size:10px;padding:6px 12px;color:var(--error);border-color:var(--error)" onclick="rechazarConMotivo('${t.id}')">✕ Rechazar</button>`:''}
+          ${currentUser.role==='5U'?`<button class="btn btn-ghost" style="font-size:10px;padding:6px 12px;color:var(--error)" onclick="eliminarTareaDesdeVista('${t.id}','${t.projectId}')">✕ Borrar</button>`:''}
+        </div>
+        <div id="upload-${t.id}" class="upload-zone hidden" style="margin-top:12px;padding:12px;background:var(--bgPanel);border-radius:2px;border:1px solid var(--goldBorder)">
+          <div style="font-size:11px;color:var(--goldDim);margin-bottom:8px;font-weight:600">Registrar avance fotográfico</div>
+          <textarea class="field-input" id="obs-${t.id}" placeholder="Observación técnica (ej: Falta fraguado, nivel OK...)" style="margin-bottom:8px;height:70px;resize:none"></textarea>
+          <input type="file" id="file-${t.id}" accept="image/*" style="margin-bottom:8px;color:var(--textMuted);font-size:11px;width:100%"/>
+          <div id="upload-msg-${t.id}" style="font-size:11px;display:none;margin-bottom:8px"></div>
+          <button class="btn btn-primary" style="font-size:10px" onclick="submitPhoto('${t.id}','${t.projectId}')">Guardar registro</button>
         </div>
       </div>`).join('')}
+    </div>
+    ${area==='A'&&level>=4?`<div style="margin-top:24px"><button class="btn btn-outline" onclick="navigateTo('team')">Ver mi equipo →</button></div>`:''}`;
+}
+
+async function enviarAlertaObra() {
+  const tipo  = document.getElementById('alert-type').value;
+  const body  = document.getElementById('alert-body').value.trim();
+  const msg   = document.getElementById('alert-msg');
+  if (!tipo || !body) { msg.style.display='block'; msg.style.color='var(--error)'; msg.textContent='Seleccioná tipo y describí el problema.'; return; }
+  const tipoLabel = {material:'Falta de materiales', clima:'Problema climático', accidente:'Accidente / Seguridad', otro:'Problema crítico'}[tipo] || tipo;
+  const title = `🚨 ALERTA DE OBRA — ${tipoLabel}`;
+  const fullBody = `Reportado por ${currentUser.name} (${ROLE_LABELS[currentUser.role]||currentUser.role}): ${body}`;
+  msg.style.display='block'; msg.style.color='var(--goldDim)'; msg.textContent='Enviando alerta...';
+  // Notificar a toda el Área I
+  await notifyByArea('I', title, fullBody, 'alerta');
+  // Notificar a Área U
+  await notifyByArea('U', title, fullBody, 'alerta');
+  msg.style.color='var(--error)'; msg.textContent='🚨 Alerta enviada a Dirección.';
+  document.getElementById('alert-type').value='';
+  document.getElementById('alert-body').value='';
+}
+
+async function rechazarConMotivo(taskId) {
+  const existing = document.getElementById('rechazo-modal');
+  if (existing) existing.remove();
+  const modal = document.createElement('div');
+  modal.id = 'rechazo-modal';
+  modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:999;display:flex;align-items:center;justify-content:center;padding:20px';
+  modal.innerHTML = `
+    <div style="background:var(--bgCard);border:1px solid var(--goldBorder);border-radius:4px;padding:28px;max-width:400px;width:100%">
+      <div style="font-size:14px;font-weight:700;color:var(--error);margin-bottom:16px">✕ Rechazar etapa</div>
+      <div class="field" style="margin-bottom:12px"><div class="field-label">Motivo del rechazo</div>
+        <textarea class="field-input" id="rm-motivo" placeholder="Describí el problema para que el equipo lo corrija..." style="height:80px;resize:none"></textarea>
+      </div>
+      <div id="rm-msg" style="font-size:11px;display:none;margin-bottom:12px"></div>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-outline" style="font-size:11px;color:var(--error);border-color:var(--error)" onclick="confirmarRechazo('${taskId}')">Rechazar</button>
+        <button class="btn btn-ghost" style="font-size:11px" onclick="document.getElementById('rechazo-modal').remove()">Cancelar</button>
+      </div>
     </div>`;
+  document.body.appendChild(modal);
+}
+
+async function confirmarRechazo(taskId) {
+  const motivo = document.getElementById('rm-motivo').value.trim();
+  const msg    = document.getElementById('rm-msg');
+  if (!motivo) { msg.style.display='block'; msg.style.color='var(--error)'; msg.textContent='Escribí el motivo.'; return; }
+  document.getElementById('rechazo-modal').remove();
+  await changeTaskStatus(taskId, 'Haciendo', 'view-mytasks');
+  // Notificar con el motivo
+  const task = PROJECTS.flatMap(p=>p.tasks).find(t=>t.id===taskId);
+  const proj = PROJECTS.find(p=>p.tasks.some(t=>t.id===taskId));
+  const area = task?.level?.[1];
+  if (area) await notifyByArea(area, `Etapa rechazada — ${task?.name||taskId}`, `Motivo: ${motivo}. Obra: ${proj?.name||''}`, 'alerta');
+}
+
+async function eliminarTareaDesdeVista(taskId, projectId) {
+  confirmarAccion('¿Eliminar esta tarea? No se puede deshacer.', async () => {
+    await db.delete('tasks', taskId);
+    PROJECTS.forEach(p => { p.tasks = p.tasks.filter(t=>t.id!==taskId); });
+    renderMyTasks();
+  });
+}
+
+let _uploadDocTaskId = null;
+let _uploadDocProjectId = null;
+
+function showUploadDoc(taskId, projectId) {
+  _uploadDocTaskId = taskId;
+  _uploadDocProjectId = projectId;
+  document.getElementById('upload-doc-zone').classList.remove('hidden');
+}
+
+async function submitDoc() {
+  const name     = document.getElementById('doc-name').value.trim();
+  const version  = document.getElementById('doc-version').value.trim() || 'v1';
+  const urlInput = document.getElementById('doc-url').value.trim();
+  const fileInput= document.getElementById('doc-file');
+  const msg      = document.getElementById('doc-msg');
+  if (!name) { msg.style.display='block'; msg.style.color='var(--error)'; msg.textContent='Ingresá el nombre del plano.'; return; }
+  msg.style.display='block'; msg.style.color='var(--goldDim)'; msg.textContent='Guardando...';
+
+  let fileUrl = urlInput || null;
+  const file = fileInput?.files?.[0];
+  if (file) {
+    msg.textContent = 'Subiendo archivo...';
+    fileUrl = await uploadFileToStorage(file, `planos/${_uploadDocProjectId}`);
+    if (!fileUrl) { msg.style.color='var(--error)'; msg.textContent='Error al subir el archivo.'; return; }
+  }
+
+  const result = await db.insert('documents', {
+    project_id: _uploadDocProjectId,
+    task_id: _uploadDocTaskId,
+    name, version,
+    url: fileUrl,
+    uploaded_by: currentUser.id,
+    type: 'plano'
+  });
+  if (result) {
+    msg.style.color='var(--success)'; msg.textContent='✓ Plano guardado correctamente.';
+    const p = PROJECTS.find(x=>x.id===_uploadDocProjectId);
+    if (p) await notifyByArea('I', `Nuevo plano — ${name}`, `${p.name}: ${currentUser.name} subió "${name}" (${version}).`, 'plano');
+    setTimeout(()=>{ renderMyTasks(); document.getElementById('upload-doc-zone').classList.add('hidden'); }, 1200);
+  } else { msg.style.color='var(--error)'; msg.textContent='Error al guardar.'; }
+}
+
+async function uploadFileToStorage(file, folder) {
+  const ext = file.name.split('.').pop();
+  const fileName = `${folder}/${Date.now()}_${Math.random().toString(36).substr(2,6)}.${ext}`;
+  const res = await fetch(`${SUPABASE_URL}/storage/v1/object/archivos/${fileName}`, {
+    method: 'POST',
+    headers: {
+      'apikey': SUPABASE_ANON_KEY,
+      'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+      'Content-Type': file.type,
+      'x-upsert': 'true'
+    },
+    body: file
+  });
+  if (!res.ok) { console.warn('Upload error:', await res.text()); return null; }
+  return `${SUPABASE_URL}/storage/v1/object/public/archivos/${fileName}`;
+}
+
+async function submitPhoto(taskId, projectId) {
+  const obs       = document.getElementById(`obs-${taskId}`)?.value.trim() || '';
+  const fileInput = document.getElementById(`file-${taskId}`);
+  const msg       = document.getElementById(`upload-msg-${taskId}`);
+  const file      = fileInput?.files?.[0];
+
+  if (msg) { msg.style.display='block'; msg.style.color='var(--goldDim)'; msg.textContent='Guardando...'; }
+
+  let fileUrl = null;
+  if (file) {
+    if (msg) msg.textContent = 'Subiendo archivo...';
+    fileUrl = await uploadFileToStorage(file, `fotos/${projectId}`);
+    if (!fileUrl && msg) { msg.style.color='var(--error)'; msg.textContent='Error al subir el archivo.'; return; }
+  }
+
+  const result = await db.insert('photos', {
+    task_id: taskId,
+    project_id: projectId,
+    user_id: currentUser.id,
+    url: fileUrl,
+    observation: obs || 'Sin observación'
+  });
+
+  if (result) {
+    const task = PROJECTS.flatMap(p=>p.tasks).find(t=>t.id===taskId);
+    if (task) {
+      task.photos = (task.photos||0) + 1;
+      await db.patch('tasks', taskId, { photos: task.photos });
+    }
+    if (msg) { msg.style.color='var(--success)'; msg.textContent='✓ Registro guardado.'; }
+    setTimeout(()=>renderMyTasks(), 1200);
+  } else {
+    if (msg) { msg.style.color='var(--error)'; msg.textContent='Error al guardar en base de datos.'; }
+  }
+}
+
+async function changeTaskStatus(taskId, newStatus, viewId) {
+  // Buscar tarea y proyecto
+  let foundTask = null, foundProject = null;
+  PROJECTS.forEach(p => {
+    const t = p.tasks.find(t=>t.id===taskId);
+    if (t) { foundTask = t; foundProject = p; t.status = newStatus; }
+  });
+
+  // Guardar en Supabase
+  await db.patch('tasks', taskId, { status: newStatus });
+
+  // Notificaciones automáticas según el nuevo estado
+  if (foundTask && foundProject) {
+    const taskName = foundTask.name;
+    const projName = foundProject.name;
+    const projId   = foundProject.id;
+
+    if (newStatus === 'Revisión') {
+      // Empleado envía a revisión → notificar al Área I
+      await notifyByArea('I', `Avance para revisión — ${taskName}`, `${projName}: ${taskName} fue enviada a revisión por ${currentUser.name}`, 'avance');
+    }
+    if (newStatus === 'Cerrado') {
+      // Tarea aprobada → notificar al equipo de la obra y al cliente
+      await notifyProjectTeam(projId, `Etapa aprobada — ${taskName}`, `${projName}: La etapa "${taskName}" fue aprobada y cerrada.`, 'avance');
+      await notifyClient(projId, `Tu obra avanzó — ${projName}`, `La etapa "${taskName}" fue completada. Tu obra continúa avanzando.`, 'avance');
+    }
+    if (newStatus === 'Haciendo') {
+      // Si viene de Revisión = rechazado → notificar al empleado asignado
+      const area = foundTask.level ? foundTask.level[1] : null;
+      if (area) await notifyByArea(area, `Etapa rechazada — ${taskName}`, `${projName}: La etapa "${taskName}" fue rechazada. Revisá las observaciones.`, 'alerta');
+    }
+    if (newStatus === 'Pendiente') {
+      // Tarea nueva asignada → notificar al área correspondiente
+      const area = foundTask.level ? foundTask.level[1] : null;
+      if (area) await notifyByArea(area, `Nueva tarea asignada — ${taskName}`, `Obra: ${projName}. Tarea: "${taskName}" asignada a tu área.`, 'info');
+    }
+  }
+
+  renderCurrentView();
+}
+
+// ─── PANEL ADMIN (Usuarios) ────────────────────────────────────────────────────
+function renderAdmin() {
+  const canCreate = canDo('crear_cuenta');
+  const canModify = canDo('modificar_roles');
+  const ROLES_DISPONIBLES = ['cliente','1A','2A','3A','4A','5A','1E','2E','3E','4E','5E','1I','2I','3I','4I','5I','1O','2O','3O','4O','5O','1U','2U','3U','4U','5U'];
+  
+  const el = document.getElementById('view-admin');
+  if (!el) return;
+  el.innerHTML = `
+    <div class="section-super">Sistema</div>
+    <div class="section-title">ADMINISTRACIÓN DE USUARIOS</div>
+    <div class="section-sub">Gestión de cuentas y permisos</div>
+    ${canCreate ? `
+    <div class="card" style="margin-bottom:28px">
+      <div style="font-size:12px;font-weight:700;color:var(--gold);letter-spacing:.12em;text-transform:uppercase;margin-bottom:16px">Crear nueva cuenta</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
+        <div class="field" style="margin:0"><div class="field-label">Nombre completo</div><input class="field-input" id="new-name" type="text" placeholder="Juan Pérez" /></div>
+        <div class="field" style="margin:0"><div class="field-label">Email</div><input class="field-input" id="new-email" type="email" placeholder="juan@casalis.com" /></div>
+        <div class="field" style="margin:0"><div class="field-label">Contraseña</div><input class="field-input" id="new-pass" type="password" placeholder="••••••••" /></div>
+        <div class="field" style="margin:0"><div class="field-label">Rol</div>
+          <select class="field-input" id="new-role">
+            ${ROLES_DISPONIBLES.map(r=>`<option value="${r}">${r} — ${ROLE_LABELS[r]||r}</option>`).join('')}
+          </select>
+        </div>
+        <div class="field" style="margin:0"><div class="field-label">Provincia</div>
+          <select class="field-input" id="new-province">
+            ${['Córdoba','Buenos Aires','Catamarca','Jujuy','Salta','Santiago del Estero','Chaco','Formosa','Misiones','Corrientes','Tucumán','La Rioja','San Luis','Mendoza','San Juan','Santa Fe','Entre Ríos','La Pampa','Neuquén','Río Negro','Chubut','Santa Cruz','Tierra del Fuego'].map(p=>`<option>${p}</option>`).join('')}
+          </select>
+        </div>
+      </div>
+      <div id="create-msg" style="font-size:12px;margin-bottom:8px;display:none"></div>
+      <button class="btn btn-primary" onclick="createUser()">Crear cuenta</button>
+    </div>` : ''}
+    <div style="font-size:12px;font-weight:700;color:var(--gold);letter-spacing:.12em;text-transform:uppercase;margin-bottom:16px">Usuarios del sistema</div>
+    <div class="col-stack-xs" id="users-list"><div style="font-size:12px;color:var(--textMuted);padding:16px;text-align:center">Cargando...</div></div>`;
+  loadUsers(canModify);
+}
+
+async function loadUsers(canModify) {
+  const ROLES_DISPONIBLES = ['cliente','1A','2A','3A','4A','5A','1E','2E','3E','4E','5E','1I','2I','3I','4I','5I','1O','2O','3O','4O','5O','1U','2U','3U','4U','5U'];
+  const rows = await db.query('users', '?select=id,name,email,role,province&order=role');
+  const el = document.getElementById('users-list');
+  if (!el) return;
+  if (!rows || rows.length === 0) { el.innerHTML = '<div style="font-size:12px;color:var(--textMuted);padding:16px;text-align:center">Sin usuarios</div>'; return; }
+  const isCEO = currentUser.role === '5U';
+
+  el.innerHTML = rows.map(u=>`
+    <div class="card" id="user-row-${u.id}" style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+      <div style="width:36px;height:36px;border-radius:50%;background:var(--bgPanel);border:1px solid var(--goldBorder);display:flex;align-items:center;justify-content:center;font-size:14px;color:var(--gold);flex-shrink:0">${u.name?.charAt(0)||'?'}</div>
+      <div style="flex:1;min-width:120px">
+        <div style="font-size:13px;color:var(--text);font-weight:600">${u.name}</div>
+        <div style="font-size:10px;color:var(--textMuted)">${u.email} · ${u.province||'—'}</div>
+      </div>
+      ${canModify?`<select class="field-input" style="width:170px;font-size:11px;padding:6px 8px" onchange="changeRole('${u.id}',this.value)">
+        ${ROLES_DISPONIBLES.map(r=>`<option value="${r}" ${u.role===r?'selected':''}>${r} — ${ROLE_LABELS[r]||r}</option>`).join('')}
+      </select>`:`<span class="badge" style="color:var(--goldDim);border-color:var(--goldDim)">${u.role} · ${ROLE_LABELS[u.role]||u.role}</span>`}
+      ${canModify?`<button class="btn btn-ghost" style="font-size:10px;padding:4px 8px" onclick="editarNombreUsuario('${u.id}','${u.name.replace(/'/g,"\'")}')">✏</button>`:''}
+      ${isCEO&&u.id!==currentUser.id?`<button class="btn btn-ghost" style="font-size:10px;padding:4px 8px;color:var(--error)" onclick="eliminarUsuario('${u.id}','${u.name.replace(/'/g,"\'")}')">✕</button>`:''}
+    </div>`).join('');
+}
+
+async function createUser() {
+  const name = document.getElementById('new-name').value.trim();
+  const email = document.getElementById('new-email').value.trim();
+  const pass = document.getElementById('new-pass').value;
+  const role = document.getElementById('new-role').value;
+  const province = document.getElementById('new-province').value;
+  const msg = document.getElementById('create-msg');
+  const REGION_MAP = {'Catamarca':'Norte','Jujuy':'Norte','Salta':'Norte','Santiago del Estero':'Norte','Chaco':'Norte','Formosa':'Norte','Misiones':'Norte','Corrientes':'Norte','Tucumán':'Norte','Córdoba':'Centro','La Rioja':'Centro','San Luis':'Centro','Mendoza':'Centro','San Juan':'Centro','Santa Fe':'Centro','Entre Ríos':'Centro','Buenos Aires':'Sur','La Pampa':'Sur','Neuquén':'Sur','Río Negro':'Sur','Chubut':'Sur','Santa Cruz':'Sur','Tierra del Fuego':'Sur'};
+  if (!name||!email||!pass) { msg.style.display='block'; msg.style.color='var(--error)'; msg.textContent='Completá todos los campos.'; return; }
+  const region = REGION_MAP[province]||'Centro';
+  const result = await db.insert('users',{name,email,password:pass,role,province,region});
+  if (result) { msg.style.display='block'; msg.style.color='var(--success)'; msg.textContent='✓ Cuenta creada.'; document.getElementById('new-name').value=''; document.getElementById('new-email').value=''; document.getElementById('new-pass').value=''; setTimeout(()=>renderAdmin(),1500); }
+  else { msg.style.display='block'; msg.style.color='var(--error)'; msg.textContent='Error al crear la cuenta.'; }
+}
+
+async function changeRole(userId, newRole) {
+  await db.patch('users', userId, { role: newRole });
+}
+
+async function editarNombreUsuario(userId, currentName) {
+  // Abrir modal de edición
+  const existing = document.getElementById('edit-user-modal');
+  if (existing) existing.remove();
+  const modal = document.createElement('div');
+  modal.id = 'edit-user-modal';
+  modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:999;display:flex;align-items:center;justify-content:center;padding:20px';
+  modal.innerHTML = `
+    <div style="background:var(--bgCard);border:1px solid var(--goldBorder);border-radius:4px;padding:28px;max-width:400px;width:100%">
+      <div style="font-size:14px;font-weight:700;color:var(--gold);margin-bottom:20px">Editar usuario</div>
+      <div class="field" style="margin-bottom:12px"><div class="field-label">Nombre</div><input class="field-input" id="eu-name" value="${currentName}"/></div>
+      <div class="field" style="margin-bottom:12px"><div class="field-label">Nueva contraseña (dejar vacío para no cambiar)</div><input class="field-input" id="eu-pass" type="password" placeholder="••••••••"/></div>
+      <div id="eu-msg" style="font-size:11px;display:none;margin-bottom:12px"></div>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-primary" style="font-size:11px" onclick="guardarEdicionUsuario('${userId}')">Guardar</button>
+        <button class="btn btn-ghost" style="font-size:11px" onclick="document.getElementById('edit-user-modal').remove()">Cancelar</button>
+      </div>
+    </div>`;
+  document.body.appendChild(modal);
+}
+
+async function guardarEdicionUsuario(userId) {
+  const name = document.getElementById('eu-name').value.trim();
+  const pass = document.getElementById('eu-pass').value;
+  const msg  = document.getElementById('eu-msg');
+  if (!name) { msg.style.display='block'; msg.style.color='var(--error)'; msg.textContent='El nombre no puede estar vacío.'; return; }
+  const data = { name };
+  if (pass) data.password = pass;
+  msg.style.display='block'; msg.style.color='var(--goldDim)'; msg.textContent='Guardando...';
+  const result = await db.patch('users', userId, data);
+  if (result) { msg.style.color='var(--success)'; msg.textContent='✓ Usuario actualizado.'; setTimeout(()=>{ document.getElementById('edit-user-modal').remove(); renderAdmin(); }, 1000); }
+  else { msg.style.color='var(--error)'; msg.textContent='Error al guardar.'; }
+}
+
+async function eliminarUsuario(userId, userName) {
+  confirmarAccion(`¿Eliminar al usuario "${userName}"? Esta acción no se puede deshacer.`, async () => {
+    await db.delete('users', userId);
+    const row = document.getElementById('user-row-'+userId);
+    if (row) row.remove();
+  });
+}
+
+// ─── PANEL FINANZAS ────────────────────────────────────────────────────────────
+async function renderFinanzas() {
+  const el = document.getElementById('view-finanzas');
+  if (!el) return;
+  const area  = getArea(currentUser.role);
+  const level = getLevel(currentUser.role);
+  const fmt   = n => '$' + Number(n).toLocaleString('es-AR');
+
+  const puedeRegistrar = (area==='O'&&level>=2)||area==='U';
+  const puedeAprobar   = (area==='O'&&level>=3)||(area==='I'&&level>=4)||area==='U';
+  const puedeVerNomina = (area==='O'&&level>=3)||(area==='U'&&level>=5);
+  const puedeCajas     = (area==='O'&&level>=5)||(area==='U'&&level>=5);
+  const puedeEditarParam = currentUser.role==='5O'||currentUser.role==='5U';
+  const esReadOnly     = area==='O'&&level===1;
+
+  // Filtro de fecha
+  const now = new Date();
+  const mesActual = now.getMonth();
+  const anioActual = now.getFullYear();
+
+  el.innerHTML = `
+    <div class="section-super">Módulo</div>
+    <div class="section-title">FINANZAS</div>
+
+    <!-- FILTRO FECHA -->
+    <div class="card" style="margin-bottom:20px;display:flex;gap:12px;align-items:center;flex-wrap:wrap">
+      <div style="font-size:11px;color:var(--goldDim);font-weight:700;text-transform:uppercase;letter-spacing:.08em">Filtrar:</div>
+      <select class="field-input" id="fin-mes" style="width:130px;font-size:11px" onchange="renderFinanzas()">
+        <option value="-1">Todos los meses</option>
+        ${['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'].map((m,i)=>`<option value="${i}" ${i===mesActual?'selected':''}>${m}</option>`).join('')}
+      </select>
+      <select class="field-input" id="fin-anio" style="width:100px;font-size:11px" onchange="renderFinanzas()">
+        ${[2024,2025,2026,2027].map(y=>`<option value="${y}" ${y===anioActual?'selected':''}>${y}</option>`).join('')}
+      </select>
+      <div style="font-size:10px;color:var(--textMuted);margin-left:auto" id="fin-periodo-label"></div>
+    </div>
+
+    <div id="fin-contenido"><div style="color:var(--textMuted);font-size:12px;padding:20px;text-align:center">Cargando...</div></div>`;
+
+  await cargarFinanzas(puedeRegistrar, puedeAprobar, puedeVerNomina, puedeCajas, puedeEditarParam, esReadOnly, fmt, area, level);
+}
+
+async function cargarFinanzas(puedeRegistrar, puedeAprobar, puedeVerNomina, puedeCajas, puedeEditarParam, esReadOnly, fmt, area, level) {
+  const el = document.getElementById('fin-contenido');
+  if (!el) return;
+
+  const mesEl  = document.getElementById('fin-mes');
+  const anioEl = document.getElementById('fin-anio');
+  const mes    = mesEl  ? parseInt(mesEl.value)  : -1;
+  const anio   = anioEl ? parseInt(anioEl.value) : new Date().getFullYear();
+
+  // Cargar todos los movimientos
+  const allMovs = await db.query('movements','?order=created_at.desc') || [];
+
+  // Filtrar por fecha
+  const filtrar = m => {
+    if (!m.created_at) return true;
+    const d = new Date(m.created_at);
+    if (anio && d.getFullYear() !== anio) return false;
+    if (mes >= 0 && d.getMonth() !== mes) return false;
+    return true;
+  };
+
+  const movs       = allMovs.filter(filtrar);
+  const aprobados  = movs.filter(m=>m.status==='aprobado');
+  const pendientes = movs.filter(m=>m.status==='pendiente');
+  const ingresos   = aprobados.filter(m=>m.type==='ingreso').reduce((a,m)=>a+Number(m.amount),0);
+  const egresos    = aprobados.filter(m=>m.type==='egreso').reduce((a,m)=>a+Number(m.amount),0);
+  const saldo      = ingresos - egresos;
+
+  // KPIs por mes para gráfico (últimos 6 meses)
+  const mesesLabel = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+  const now = new Date();
+  const grafData = [];
+  for (let i=5; i>=0; i--) {
+    const d = new Date(now.getFullYear(), now.getMonth()-i, 1);
+    const mm = d.getMonth(); const aa = d.getFullYear();
+    const mMovs = allMovs.filter(m=>{ const md=new Date(m.created_at); return md.getMonth()===mm&&md.getFullYear()===aa&&m.status==='aprobado'; });
+    grafData.push({
+      label: mesesLabel[mm],
+      ing: mMovs.filter(m=>m.type==='ingreso').reduce((a,m)=>a+Number(m.amount),0),
+      egr: mMovs.filter(m=>m.type==='egreso').reduce((a,m)=>a+Number(m.amount),0),
+    });
+  }
+  const maxVal = Math.max(...grafData.map(d=>Math.max(d.ing,d.egr)),1);
+
+  // Agrupar por categoría para torta
+  const catMap = {};
+  aprobados.filter(m=>m.type==='egreso').forEach(m=>{
+    const c = m.category||'otro';
+    catMap[c] = (catMap[c]||0)+Number(m.amount);
+  });
+  const catColors = {honorarios:'var(--gold)',materiales:'var(--goldDim)',nomina:'var(--success)',proveedor:'var(--warn)',impuesto:'var(--error)',otro:'var(--textMuted)'};
+
+  // Label período
+  const periodoLabel = mes>=0 ? `${mesesLabel[mes]} ${anio}` : `Año ${anio}`;
+  const labelEl = document.getElementById('fin-periodo-label');
+  if (labelEl) labelEl.textContent = periodoLabel;
+
+  el.innerHTML = `
+    <!-- KPIs -->
+    <div class="grid-4" style="margin-bottom:24px">
+      <div class="card"><div class="kpi-icon" style="color:var(--success)">↑</div><div class="kpi-value" style="color:var(--success);font-size:18px">${fmt(ingresos)}</div><div class="kpi-label">Ingresos</div></div>
+      <div class="card"><div class="kpi-icon" style="color:var(--error)">↓</div><div class="kpi-value" style="color:var(--error);font-size:18px">${fmt(egresos)}</div><div class="kpi-label">Egresos</div></div>
+      <div class="card"><div class="kpi-icon" style="color:var(--gold)">◈</div><div class="kpi-value" style="color:${saldo>=0?'var(--success)':'var(--error)'};font-size:18px">${fmt(saldo)}</div><div class="kpi-label">Saldo</div></div>
+      <div class="card"><div class="kpi-icon" style="color:var(--warn)">⏳</div><div class="kpi-value" style="color:var(--warn);font-size:18px">${pendientes.length}</div><div class="kpi-label">Pendientes</div></div>
+    </div>
+
+    <!-- GRÁFICO BARRAS — últimos 6 meses -->
+    <div class="card" style="margin-bottom:24px">
+      <div style="font-size:12px;font-weight:700;color:var(--gold);letter-spacing:.1em;text-transform:uppercase;margin-bottom:16px">Evolución últimos 6 meses</div>
+      <div style="display:flex;align-items:flex-end;gap:8px;height:120px;padding-bottom:4px">
+        ${grafData.map(d=>`
+        <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px">
+          <div style="display:flex;gap:2px;align-items:flex-end;width:100%;height:100px">
+            <div style="flex:1;background:var(--success);opacity:.7;border-radius:2px 2px 0 0;height:${Math.round(d.ing/maxVal*100)}%;min-height:2px;transition:height .3s"></div>
+            <div style="flex:1;background:var(--error);opacity:.7;border-radius:2px 2px 0 0;height:${Math.round(d.egr/maxVal*100)}%;min-height:2px;transition:height .3s"></div>
+          </div>
+          <div style="font-size:9px;color:var(--textMuted);text-align:center">${d.label}</div>
+        </div>`).join('')}
+      </div>
+      <div style="display:flex;gap:16px;margin-top:8px">
+        <div style="display:flex;align-items:center;gap:6px"><div style="width:10px;height:10px;background:var(--success);opacity:.7;border-radius:1px"></div><span style="font-size:10px;color:var(--textMuted)">Ingresos</span></div>
+        <div style="display:flex;align-items:center;gap:6px"><div style="width:10px;height:10px;background:var(--error);opacity:.7;border-radius:1px"></div><span style="font-size:10px;color:var(--textMuted)">Egresos</span></div>
+      </div>
+    </div>
+
+    <!-- DISTRIBUCIÓN EGRESOS -->
+    ${Object.keys(catMap).length>0?`
+    <div class="card" style="margin-bottom:24px">
+      <div style="font-size:12px;font-weight:700;color:var(--gold);letter-spacing:.1em;text-transform:uppercase;margin-bottom:12px">Distribución de egresos</div>
+      ${Object.entries(catMap).map(([cat,val])=>{
+        const pct = Math.round(val/egresos*100)||0;
+        return `<div style="margin-bottom:8px">
+          <div style="display:flex;justify-content:space-between;margin-bottom:3px">
+            <span style="font-size:11px;color:var(--text);text-transform:capitalize">${cat}</span>
+            <span style="font-size:11px;color:${catColors[cat]||'var(--goldDim)'};font-weight:700">${pct}% · ${fmt(val)}</span>
+          </div>
+          <div style="height:4px;background:var(--bgPanel);border-radius:2px">
+            <div style="height:4px;width:${pct}%;background:${catColors[cat]||'var(--goldDim)'};border-radius:2px"></div>
+          </div>
+        </div>`;
+      }).join('')}
+    </div>`:''} 
+
+    <!-- CAJAS ESTRATÉGICAS -->
+    ${puedeCajas?`
+    <div style="margin-bottom:16px;font-size:12px;font-weight:700;color:var(--gold);letter-spacing:.12em;text-transform:uppercase">Cajas Estratégicas</div>
+    <div id="cajas-contenido"><div style="font-size:12px;color:var(--textMuted);padding:12px;text-align:center">Cargando cajas...</div></div>
+    `:''} 
+
+    <!-- PENDIENTES -->
+    ${puedeAprobar&&pendientes.length>0?`
+    <div style="margin-bottom:16px;font-size:12px;font-weight:700;color:var(--warn);letter-spacing:.12em;text-transform:uppercase">⏳ Pendientes de autorización</div>
+    <div class="col-stack-xs" style="margin-bottom:24px">
+      ${pendientes.map(m=>`<div class="card" style="display:flex;align-items:center;gap:12px">
+        <div style="font-size:22px;color:${m.type==='ingreso'?'var(--success)':'var(--error)'}">${m.type==='ingreso'?'↑':'↓'}</div>
+        <div style="flex:1">
+          <div style="font-size:13px;color:var(--text);font-weight:600">${m.concept}</div>
+          <div style="font-size:10px;color:var(--textMuted)">${m.project_id||'General'} · ${m.created_at?new Date(m.created_at).toLocaleDateString('es-AR'):''}</div>
+        </div>
+        <div style="font-size:14px;font-weight:700;color:var(--gold)">${fmt(m.amount)}</div>
+        <button class="btn btn-primary" style="font-size:10px;padding:5px 10px" onclick="approveMovement('${m.id}')">✓</button>
+        <button class="btn btn-outline" style="font-size:10px;padding:5px 10px;color:var(--error);border-color:var(--error)" onclick="rejectMovement('${m.id}')">✕</button>
+      </div>`).join('')}
+    </div>`:''} 
+
+    <!-- REGISTRAR -->
+    ${puedeRegistrar&&!esReadOnly?`
+    <div class="card" style="margin-bottom:24px">
+      <div style="font-size:12px;font-weight:700;color:var(--gold);letter-spacing:.12em;text-transform:uppercase;margin-bottom:12px">
+        ${level>=3||area==='U'?'+ Registrar movimiento':'+ Enviar a autorización'}
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
+        <div class="field" style="margin:0"><div class="field-label">Tipo</div>
+          <select class="field-input" id="mov-type"><option value="ingreso">↑ Ingreso</option><option value="egreso">↓ Egreso</option></select>
+        </div>
+        <div class="field" style="margin:0"><div class="field-label">Monto ($)</div>
+          <input class="field-input" id="mov-amount" type="number" placeholder="0" min="0"/>
+        </div>
+        <div class="field" style="margin:0;grid-column:span 2"><div class="field-label">Concepto</div>
+          <input class="field-input" id="mov-concept" placeholder="Descripción del movimiento"/>
+        </div>
+        <div class="field" style="margin:0"><div class="field-label">Obra</div>
+          <select class="field-input" id="mov-project">
+            <option value="">General / Estudio</option>
+            ${PROJECTS.map(p=>`<option value="${p.id}">${p.id} — ${p.name}</option>`).join('')}
+          </select>
+        </div>
+        <div class="field" style="margin:0"><div class="field-label">Categoría</div>
+          <select class="field-input" id="mov-category">
+            <option value="honorarios">Honorarios</option>
+            <option value="materiales">Materiales</option>
+            <option value="nomina">Nómina</option>
+            <option value="proveedor">Proveedor</option>
+            <option value="impuesto">Impuesto</option>
+            <option value="certificado">Certificado de avance</option>
+            <option value="otro">Otro</option>
+          </select>
+        </div>
+      </div>
+      <div id="mov-msg" style="font-size:11px;display:none;margin-bottom:8px"></div>
+      <button class="btn btn-primary" onclick="submitMovement()">${level>=3||area==='U'?'Registrar':'Enviar a autorización'}</button>
+    </div>`:''} 
+
+    <!-- NÓMINA -->
+    ${puedeVerNomina?`
+    <div style="margin-bottom:16px;font-size:12px;font-weight:700;color:var(--gold);letter-spacing:.12em;text-transform:uppercase">Nómina del personal</div>
+    <div class="col-stack-xs" style="margin-bottom:24px" id="nomina-list">
+      <div style="font-size:12px;color:var(--textMuted);text-align:center;padding:16px">Cargando nómina...</div>
+    </div>`:''} 
+
+    <!-- HISTORIAL -->
+    <div style="margin-bottom:16px;font-size:12px;font-weight:700;color:var(--gold);letter-spacing:.12em;text-transform:uppercase">
+      Movimientos — ${periodoLabel}
+    </div>
+    <div class="col-stack-xs">
+      ${aprobados.length===0?`<div style="font-size:12px;color:var(--textMuted);padding:20px;text-align:center">Sin movimientos en este período</div>`:
+      aprobados.map(m=>`<div class="card" style="display:flex;align-items:center;gap:12px">
+        <div style="font-size:20px;color:${m.type==='ingreso'?'var(--success)':'var(--error)'}">${m.type==='ingreso'?'↑':'↓'}</div>
+        <div style="flex:1">
+          <div style="font-size:13px;color:var(--text)">${m.concept}</div>
+          <div style="font-size:10px;color:var(--textMuted)">${m.project_id||'General'} · ${m.category||''} · ${m.created_at?new Date(m.created_at).toLocaleDateString('es-AR'):''}</div>
+        </div>
+        <div style="font-size:14px;font-weight:700;color:${m.type==='ingreso'?'var(--success)':'var(--error)'}">${m.type==='ingreso'?'+':'-'}${fmt(m.amount)}</div>
+        ${currentUser.role==='5U'?`<button class="btn btn-ghost" style="font-size:10px;padding:4px 8px;color:var(--error)" onclick="eliminarMovimiento('${m.id}')">✕</button>`:''}
+      </div>`).join('')}
+    </div>`;
+
+  if (puedeVerNomina) loadNomina(fmt, area, level);
+  if (puedeCajas) loadCajas(fmt);
+}
+
+// Parámetros de nómina (editables por 5O y 5U)
+const NOMINA_PARAMS = {
+  sueldosBase: { A: 31840, E: 12000, I: 22000, O: 3500, U: 0 },
+  aporteEmpleado: 0.18,  // 11+3+3+1
+  aporteEmpresa:  0.44,  // 16+6+5+3+12+2
+  participacionU: { '1U':0.06, '2U':0.08, '3U':0.03, '4U':0.05, '5U':0.08 },
+};
+
+async function loadNomina(fmt, area, level) {
+  const el = document.getElementById('nomina-list');
+  if (!el) return;
+  const puedeEditarParam = currentUser.role==='5O'||currentUser.role==='5U';
+  const puedeCargarSueldo = area==='O'&&level>=3;
+
+  // Ingresos totales para calcular participación U
+  const movs = await db.query('movements','?type=eq.ingreso&status=eq.aprobado&select=amount') || [];
+  const ingresoTotal = movs.reduce((a,m)=>a+Number(m.amount),0);
+
+  const users = await db.query('users','?select=id,name,role,province&role=neq.cliente&order=role') || [];
+  if (!users.length) { el.innerHTML = '<div style="font-size:12px;color:var(--textMuted);text-align:center;padding:16px">Sin empleados</div>'; return; }
+
+  if (!fmt) fmt = n => '$' + Number(n).toLocaleString('es-AR');
+
+  const calcSueldo = (u) => {
+    const aArea  = u.role?.[1]||'A';
+    const aLevel = parseInt(u.role?.[0])||1;
+    const base   = NOMINA_PARAMS.sueldosBase[aArea] || 0;
+    let bruto    = base * (1 + (aLevel-1)*0.05);
+
+    if (aArea === 'U') {
+      const pct = NOMINA_PARAMS.participacionU[u.role]||0;
+      bruto = ingresoTotal * pct;
+    }
+
+    const descEmp  = bruto * NOMINA_PARAMS.aporteEmpleado;
+    const neto     = bruto - descEmp;
+    const costoEmp = bruto * (1 + NOMINA_PARAMS.aporteEmpresa);
+    return { bruto, neto, costoEmp, descEmp };
+  };
+
+  el.innerHTML = `
+    ${puedeEditarParam?`
+    <div class="card" style="margin-bottom:12px">
+      <div style="font-size:11px;font-weight:700;color:var(--gold);margin-bottom:10px">⚙ Parámetros de nómina</div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:8px">
+        <div><div class="field-label" style="font-size:9px">Base Área A ($)</div><input class="field-input" id="np-A" value="${NOMINA_PARAMS.sueldosBase.A}" style="font-size:11px" onchange="actualizarParam('A',this.value)"/></div>
+        <div><div class="field-label" style="font-size:9px">Base Área E ($)</div><input class="field-input" id="np-E" value="${NOMINA_PARAMS.sueldosBase.E}" style="font-size:11px" onchange="actualizarParam('E',this.value)"/></div>
+        <div><div class="field-label" style="font-size:9px">Base Área I ($)</div><input class="field-input" id="np-I" value="${NOMINA_PARAMS.sueldosBase.I}" style="font-size:11px" onchange="actualizarParam('I',this.value)"/></div>
+        <div><div class="field-label" style="font-size:9px">Base Área O ($)</div><input class="field-input" id="np-O" value="${NOMINA_PARAMS.sueldosBase.O}" style="font-size:11px" onchange="actualizarParam('O',this.value)"/></div>
+        <div><div class="field-label" style="font-size:9px">Aporte Empleado %</div><input class="field-input" id="np-ae" value="${NOMINA_PARAMS.aporteEmpleado*100}" style="font-size:11px" onchange="NOMINA_PARAMS.aporteEmpleado=parseFloat(this.value)/100;loadNomina()"/></div>
+        <div><div class="field-label" style="font-size:9px">Aporte Empresa %</div><input class="field-input" id="np-emp" value="${NOMINA_PARAMS.aporteEmpresa*100}" style="font-size:11px" onchange="NOMINA_PARAMS.aporteEmpresa=parseFloat(this.value)/100;loadNomina()"/></div>
+      </div>
+    </div>`:''} 
+    <div style="overflow-x:auto">
+    <table style="width:100%;border-collapse:collapse;font-size:11px">
+      <thead>
+        <tr style="border-bottom:1px solid var(--goldBorder)">
+          <th style="text-align:left;padding:8px 6px;color:var(--goldDim);font-weight:600;font-size:9px;text-transform:uppercase;letter-spacing:.08em">Empleado</th>
+          <th style="text-align:left;padding:8px 6px;color:var(--goldDim);font-weight:600;font-size:9px;text-transform:uppercase;letter-spacing:.08em">Rol</th>
+          <th style="text-align:right;padding:8px 6px;color:var(--goldDim);font-weight:600;font-size:9px;text-transform:uppercase;letter-spacing:.08em">Bruto</th>
+          <th style="text-align:right;padding:8px 6px;color:var(--goldDim);font-weight:600;font-size:9px;text-transform:uppercase;letter-spacing:.08em">Desc.</th>
+          <th style="text-align:right;padding:8px 6px;color:var(--success);font-weight:600;font-size:9px;text-transform:uppercase;letter-spacing:.08em">Neto</th>
+          <th style="text-align:right;padding:8px 6px;color:var(--error);font-weight:600;font-size:9px;text-transform:uppercase;letter-spacing:.08em">Costo total</th>
+          ${puedeCargarSueldo?`<th style="padding:8px 6px"></th>`:''}
+        </tr>
+      </thead>
+      <tbody>
+        ${users.map(u=>{
+          const s = calcSueldo(u);
+          return `<tr style="border-bottom:1px solid var(--bgPanel)">
+            <td style="padding:8px 6px;color:var(--text);font-weight:600">${u.name}</td>
+            <td style="padding:8px 6px;color:var(--textMuted)">${u.role} · ${u.province||'—'}</td>
+            <td style="padding:8px 6px;text-align:right;color:var(--text)">${fmt(s.bruto)}</td>
+            <td style="padding:8px 6px;text-align:right;color:var(--error)">-${fmt(s.descEmp)}</td>
+            <td style="padding:8px 6px;text-align:right;color:var(--success);font-weight:700">${fmt(s.neto)}</td>
+            <td style="padding:8px 6px;text-align:right;color:var(--error)">${fmt(s.costoEmp)}</td>
+            ${puedeCargarSueldo?`<td style="padding:8px 6px"><button class="btn btn-ghost" style="font-size:9px;padding:3px 8px" onclick="pagarSueldo('${u.id}','${u.name.replace(/'/g,"\\'")}')">Pagar</button></td>`:''}
+          </tr>`;
+        }).join('')}
+      </tbody>
+    </table>
+    </div>`;
+}
+
+function actualizarParam(area, valor) {
+  NOMINA_PARAMS.sueldosBase[area] = parseFloat(valor) || 0;
+  loadNomina();
+}
+
+const CAJAS_DEF = [
+  {id:'colchon',   nombre:'Colchón Creciente',       pct:50, color:'var(--gold)',    inv:'Plazo Fijo / Letras',  icon:'🏦'},
+  {id:'marketing', nombre:'Marketing y Captación',    pct:20, color:'var(--goldDim)', inv:'Bonos',                icon:'📢'},
+  {id:'tech',      nombre:'Herramientas y Tecnología',pct:15, color:'var(--success)', inv:'Acciones / Billeteras',icon:'🛠'},
+  {id:'subcon',    nombre:'Subcontratos y MO',        pct:10, color:'var(--warn)',    inv:'Billetera virtual',    icon:'👷'},
+  {id:'premios',   nombre:'Premios y Motivación',     pct:5,  color:'var(--error)',   inv:'Bitcoin / Cripto',     icon:'₿'},
+];
+
+async function loadCajas(fmt) {
+  const el = document.getElementById('cajas-contenido');
+  if (!el) return;
+  if (!fmt) fmt = n => '$' + Number(n).toLocaleString('es-AR');
+
+  // Cargar saldos desde Supabase
+  const rows = await db.query('cajas','?order=caja_id') || [];
+  const saldos = {};
+  rows.forEach(r => { saldos[r.caja_id] = r; });
+
+  el.innerHTML = `
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px">
+      ${CAJAS_DEF.map(c => {
+        const r = saldos[c.id] || {saldo:0,intereses:0};
+        const total = Number(r.saldo||0) + Number(r.intereses||0);
+        return `<div class="card">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+            <div style="font-size:22px">${c.icon}</div>
+            <div>
+              <div style="font-size:11px;font-weight:700;color:${c.color}">${c.nombre}</div>
+              <div style="font-size:9px;color:var(--textMuted)">${c.pct}% · ${c.inv}</div>
+            </div>
+          </div>
+          <div style="font-size:20px;font-weight:700;color:${c.color};margin-bottom:4px">${fmt(total)}</div>
+          ${Number(r.intereses)>0?`<div style="font-size:10px;color:var(--success)">+ ${fmt(r.intereses)} intereses</div>`:''}
+          <div style="margin-top:10px;display:flex;gap:6px;flex-wrap:wrap">
+            <input type="number" id="caja-dep-${c.id}" placeholder="Depositar..." class="field-input" style="font-size:10px;padding:4px 8px;width:110px" min="0"/>
+            <button class="btn btn-primary" style="font-size:9px;padding:4px 10px" onclick="depositarCaja('${c.id}')">+ Depositar</button>
+          </div>
+          <div style="margin-top:6px;display:flex;gap:6px;flex-wrap:wrap;align-items:center">
+            <input type="number" id="caja-int-${c.id}" placeholder="Interés..." class="field-input" style="font-size:10px;padding:4px 8px;width:110px" min="0"/>
+            <button class="btn btn-ghost" style="font-size:9px;padding:4px 10px" onclick="registrarInteres('${c.id}')">% Interés</button>
+          </div>
+          ${total>0?`<div style="margin-top:6px"><button class="btn btn-ghost" style="font-size:9px;padding:3px 8px;color:var(--error)" onclick="retirarCaja('${c.id}')">Retirar</button></div>`:''}
+        </div>`;
+      }).join('')}
+    </div>`;
+}
+
+async function depositarCaja(cajaId) {
+  const input = document.getElementById('caja-dep-'+cajaId);
+  const monto = parseFloat(input?.value);
+  if (!monto || monto <= 0) return;
+  const rows = await db.query('cajas',`?caja_id=eq.${cajaId}`) || [];
+  if (rows.length > 0) {
+    const nuevo = Number(rows[0].saldo||0) + monto;
+    await db.patch('cajas', rows[0].id, { saldo: nuevo });
+  } else {
+    await db.insert('cajas', { caja_id: cajaId, saldo: monto, intereses: 0 });
+  }
+  if (input) input.value = '';
+  loadCajas();
+}
+
+async function registrarInteres(cajaId) {
+  const input = document.getElementById('caja-int-'+cajaId);
+  const monto = parseFloat(input?.value);
+  if (!monto || monto <= 0) return;
+  const rows = await db.query('cajas',`?caja_id=eq.${cajaId}`) || [];
+  if (rows.length > 0) {
+    const nuevo = Number(rows[0].intereses||0) + monto;
+    await db.patch('cajas', rows[0].id, { intereses: nuevo });
+  } else {
+    await db.insert('cajas', { caja_id: cajaId, saldo: 0, intereses: monto });
+  }
+  if (input) input.value = '';
+  loadCajas();
+}
+
+async function retirarCaja(cajaId) {
+  const existing = document.getElementById('retiro-modal');
+  if (existing) existing.remove();
+  const modal = document.createElement('div');
+  modal.id = 'retiro-modal';
+  modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:999;display:flex;align-items:center;justify-content:center;padding:20px';
+  const c = CAJAS_DEF.find(x=>x.id===cajaId);
+  modal.innerHTML = `
+    <div style="background:var(--bgCard);border:1px solid var(--goldBorder);border-radius:4px;padding:28px;max-width:380px;width:100%">
+      <div style="font-size:13px;font-weight:700;color:var(--gold);margin-bottom:16px">Retirar de ${c?.nombre||cajaId}</div>
+      <div class="field" style="margin-bottom:8px"><div class="field-label">Monto a retirar</div><input class="field-input" id="ret-monto" type="number" placeholder="0" min="0"/></div>
+      <div class="field" style="margin-bottom:12px"><div class="field-label">Motivo</div><input class="field-input" id="ret-motivo" placeholder="Ej: Pago proveedor BIM"/></div>
+      <div id="ret-msg" style="font-size:11px;display:none;margin-bottom:8px"></div>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-primary" style="font-size:11px" onclick="confirmarRetiro('${cajaId}')">Retirar</button>
+        <button class="btn btn-ghost" style="font-size:11px" onclick="document.getElementById('retiro-modal').remove()">Cancelar</button>
+      </div>
+    </div>`;
+  document.body.appendChild(modal);
+}
+
+async function confirmarRetiro(cajaId) {
+  const monto  = parseFloat(document.getElementById('ret-monto')?.value);
+  const motivo = document.getElementById('ret-motivo')?.value.trim();
+  const msg    = document.getElementById('ret-msg');
+  if (!monto||monto<=0) { msg.style.display='block'; msg.style.color='var(--error)'; msg.textContent='Ingresá un monto válido.'; return; }
+  if (!motivo) { msg.style.display='block'; msg.style.color='var(--error)'; msg.textContent='Escribí el motivo.'; return; }
+  const rows = await db.query('cajas',`?caja_id=eq.${cajaId}`) || [];
+  if (rows.length > 0) {
+    const actual = Number(rows[0].saldo||0)+Number(rows[0].intereses||0);
+    if (monto > actual) { msg.style.display='block'; msg.style.color='var(--error)'; msg.textContent='Saldo insuficiente.'; return; }
+    const nuevoSaldo = Math.max(0, Number(rows[0].saldo||0) - monto);
+    await db.patch('cajas', rows[0].id, { saldo: nuevoSaldo });
+    // Registrar como egreso en movimientos
+    await db.insert('movements',{ type:'egreso', concept:`Retiro caja — ${motivo}`, amount:monto, category:'otro', status:'aprobado', created_by:currentUser.id });
+  }
+  document.getElementById('retiro-modal').remove();
+  loadCajas();
+}
+
+
+async function submitMovement() {
+  const type     = document.getElementById('mov-type').value;
+  const amount   = parseFloat(document.getElementById('mov-amount').value);
+  const concept  = document.getElementById('mov-concept').value.trim();
+  const project  = document.getElementById('mov-project').value;
+  const category = document.getElementById('mov-category')?.value || 'otro';
+  const msg      = document.getElementById('mov-msg');
+  const area     = getArea(currentUser.role);
+  const level    = getLevel(currentUser.role);
+  if (!amount || !concept) { msg.style.display='block'; msg.style.color='var(--error)'; msg.textContent='Completá monto y concepto.'; return; }
+  const status = (level >= 3 || area === 'U') ? 'aprobado' : 'pendiente';
+  const result = await db.insert('movements', { type, amount, concept, category, project_id: project||null, status, created_by: currentUser.id });
+  if (result) {
+    msg.style.display='block'; msg.style.color='var(--success)';
+    msg.textContent = status==='aprobado' ? '✓ Movimiento registrado.' : '✓ Enviado a autorización.';
+    if (status === 'pendiente') {
+      // Notificar a 3O, 4O, 5O que hay un movimiento pendiente
+      await notifyByArea('O', `Movimiento pendiente de autorización`, `"${concept}" por $${amount.toLocaleString('es-AR')} requiere aprobación.`, 'pago');
+    }
+    setTimeout(()=>renderFinanzas(), 1200);
+  } else { msg.style.display='block'; msg.style.color='var(--error)'; msg.textContent='Error al guardar.'; }
+}
+
+async function approveMovement(id) {
+  const movs = await db.query('movements', `?id=eq.${id}&select=*`) || [];
+  const mov = movs[0];
+  await db.patch('movements', id, { status:'aprobado', approved_by: currentUser.id });
+  if (mov) {
+    await notifyByArea('O', `Movimiento aprobado`, `"${mov.concept}" por $${Number(mov.amount).toLocaleString('es-AR')} fue aprobado.`, 'pago');
+  }
+  renderFinanzas();
+}
+
+async function rejectMovement(id) {
+  const movs = await db.query('movements', `?id=eq.${id}&select=*`) || [];
+  const mov = movs[0];
+  await db.patch('movements', id, { status:'rechazado' });
+  if (mov) {
+    await notifyByArea('O', `Movimiento rechazado`, `"${mov.concept}" por $${Number(mov.amount).toLocaleString('es-AR')} fue rechazado.`, 'alerta');
+  }
+  renderFinanzas();
+}
+
+// ─── MENSAJES ─────────────────────────────────────────────────────────────────
+async function renderMensajes() {
+  const el = document.getElementById('view-mensajes');
+  if (!el) return;
+  const level = getLevel(currentUser.role);
+
+  el.innerHTML = `
+    <div class="section-super">Sistema</div>
+    <div class="section-title">MENSAJES</div>
+
+    <div class="card" style="margin-bottom:24px">
+      <div style="font-size:12px;font-weight:700;color:var(--gold);letter-spacing:.12em;text-transform:uppercase;margin-bottom:12px">✉ Nuevo mensaje directo</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
+        <div>
+          <div class="field-label" style="font-size:10px;margin-bottom:4px">Destinatario</div>
+          <select class="field-input" id="msg-to" style="font-size:11px">
+            <option value="">Seleccionar...</option>
+          </select>
+        </div>
+        <div>
+          <div class="field-label" style="font-size:10px;margin-bottom:4px">Asunto</div>
+          <input class="field-input" id="msg-subject" placeholder="Asunto del mensaje" style="font-size:11px"/>
+        </div>
+      </div>
+      <textarea class="field-input" id="msg-body" placeholder="Escribí tu mensaje..." style="height:80px;resize:none;margin-bottom:8px"></textarea>
+      <div id="msg-send-status" style="font-size:11px;display:none;margin-bottom:8px"></div>
+      <button class="btn btn-primary" style="font-size:11px" onclick="enviarMensaje()">Enviar mensaje</button>
+    </div>
+
+    <div style="font-size:12px;font-weight:700;color:var(--gold);letter-spacing:.12em;text-transform:uppercase;margin-bottom:12px">Mensajes recibidos</div>
+    <div class="col-stack-xs" id="msg-list">
+      <div style="font-size:12px;color:var(--textMuted);padding:20px;text-align:center">Cargando...</div>
+    </div>`;
+
+  // Cargar usuarios para el selector
+  let users = await db.query('users','?select=id,name,role&order=name') || [];
+
+  // Si es cliente, buscar el responsable de su obra primero
+  if (currentUser.role === 'cliente') {
+    const p = PROJECTS.find(x=>x.client===currentUser.name);
+    if (p) {
+      const team = await db.query('project_team',`?project_id=eq.${p.id}&is_lead=eq.true&select=user_id,user_name,user_role`) || [];
+      if (team.length > 0) {
+        const lead = team[0];
+        const select = document.getElementById('msg-to');
+        if (select) {
+          const opt = document.createElement('option');
+          opt.value = lead.user_id;
+          opt.textContent = `★ ${lead.user_name} — Responsable de tu obra`;
+          opt.selected = true;
+          select.appendChild(opt);
+        }
+      }
+    }
+    // Clientes solo pueden contactar al responsable de su obra
+    users = users.filter(u=>u.role!=='cliente');
+  }
+
+  const select = document.getElementById('msg-to');
+  if (select) {
+    users.filter(u=>u.id !== currentUser.id).forEach(u => {
+      const opt = document.createElement('option');
+      opt.value = u.id;
+      opt.textContent = `${u.name} — ${ROLE_LABELS[u.role]||u.role}`;
+      select.appendChild(opt);
+    });
+  }
+
+  // Cargar mensajes recibidos
+  const msgs = await db.query('notifications', `?user_id=eq.${currentUser.id}&type=eq.mensaje&order=created_at.desc&limit=30`) || [];
+  const list = document.getElementById('msg-list');
+  if (!list) return;
+
+  if (msgs.length === 0) {
+    list.innerHTML = `<div style="font-size:12px;color:var(--textMuted);padding:20px;text-align:center">Sin mensajes recibidos</div>`;
+    return;
+  }
+
+  list.innerHTML = msgs.map(m => {
+    const time = m.created_at ? new Date(m.created_at).toLocaleString('es-AR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}) : '';
+    return `<div class="card" id="notif-${m.id}" style="opacity:${m.read?'.65':'1'}">
+      <div style="display:flex;align-items:flex-start;gap:12px">
+        <div style="font-size:18px;color:var(--gold);flex-shrink:0">✉</div>
+        <div style="flex:1">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+            <div style="font-size:13px;font-weight:${m.read?'400':'700'};color:${m.read?'var(--textMuted)':'var(--text)'}">${m.title}</div>
+            ${!m.read?`<button class="btn btn-ghost" style="font-size:9px;padding:2px 8px" onclick="markNotifRead('${m.id}')">Leído</button>`:''}
+          </div>
+          <div style="font-size:12px;color:var(--textMuted);margin-bottom:6px;line-height:1.5">${m.body||''}</div>
+          <div style="font-size:10px;color:var(--textMuted)">${time}</div>
+        </div>
+        ${!m.read?`<div style="width:8px;height:8px;border-radius:50%;background:var(--gold);flex-shrink:0;margin-top:6px"></div>`:''}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+async function enviarMensaje() {
+  const toId   = document.getElementById('msg-to').value;
+  const subject = document.getElementById('msg-subject').value.trim();
+  const body   = document.getElementById('msg-body').value.trim();
+  const status = document.getElementById('msg-send-status');
+
+  if (!toId || !subject || !body) { status.style.display='block'; status.style.color='var(--error)'; status.textContent='Completá todos los campos.'; return; }
+
+  status.style.display='block'; status.style.color='var(--goldDim)'; status.textContent='Enviando...';
+
+  const result = await db.insert('notifications', {
+    user_id: toId,
+    role_target: null,
+    title: `✉ ${currentUser.name}: ${subject}`,
+    body,
+    type: 'mensaje',
+    read: false
+  });
+
+  if (result) {
+    status.style.color='var(--success)'; status.textContent='✓ Mensaje enviado.';
+    document.getElementById('msg-subject').value='';
+    document.getElementById('msg-body').value='';
+    document.getElementById('msg-to').value='';
+  } else {
+    status.style.color='var(--error)'; status.textContent='Error al enviar.';
+  }
+}
+
+// ─── PEDIDOS DE MATERIALES ────────────────────────────────────────────────────
+async function renderPedidos() {
+  const area  = getArea(currentUser.role);
+  const level = getLevel(currentUser.role);
+  const el    = document.getElementById('view-pedidos');
+  if (!el) return;
+
+  const canCreate  = area==='I'&&level>=3;
+  const canApprove = (area==='I'&&level>=4)||(area==='O'&&level>=3)||area==='U';
+  const canReceive = area==='A'&&level>=3;
+
+  el.innerHTML = `<div class="section-super">Módulo</div><div class="section-title">PEDIDOS DE MATERIALES</div><div style="color:var(--textMuted);font-size:12px;padding:20px;text-align:center">Cargando...</div>`;
+
+  const pedidos = await db.query('pedidos','?order=created_at.desc&limit=50') || [];
+
+  const statusColors = {pendiente:'var(--warn)',aprobado:'var(--success)',rechazado:'var(--error)',recibido:'var(--goldDim)',comprado:'var(--gold)'};
+
+  let html = `<div class="section-super">Módulo</div><div class="section-title">PEDIDOS DE MATERIALES</div>`;
+
+  if (canCreate) {
+    html += `<div class="card" style="margin-bottom:24px">
+      <div style="font-size:12px;font-weight:700;color:var(--gold);letter-spacing:.12em;text-transform:uppercase;margin-bottom:12px">+ Nuevo pedido</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
+        <input class="field-input" id="ped-item" placeholder="Material solicitado"/>
+        <input class="field-input" id="ped-qty" placeholder="Cantidad y unidad (ej: 50 bolsas)"/>
+        <select class="field-input" id="ped-project">
+          <option value="">Obra...</option>
+          ${PROJECTS.map(p=>`<option value="${p.id}">${p.id} — ${p.name}</option>`).join('')}
+        </select>
+        <input class="field-input" id="ped-urgency" placeholder="Urgencia (Alta/Media/Baja)"/>
+      </div>
+      <textarea class="field-input" id="ped-desc" placeholder="Descripción adicional..." style="height:50px;resize:none;margin-bottom:8px"></textarea>
+      <div id="ped-msg" style="font-size:11px;display:none;margin-bottom:8px"></div>
+      <button class="btn btn-primary" style="font-size:11px" onclick="crearPedido()">Enviar pedido</button>
+    </div>`;
+  }
+
+  html += `<div class="col-stack-xs">
+    ${pedidos.length===0?`<div style="font-size:12px;color:var(--textMuted);padding:20px;text-align:center">Sin pedidos registrados</div>`:''}
+    ${pedidos.map(p=>`<div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">
+        <div>
+          <div style="font-size:13px;color:var(--text);font-weight:600">${p.item||'Sin descripción'}</div>
+          <div style="font-size:10px;color:var(--textMuted)">${p.project_id||'General'} · ${p.quantity||''} · ${p.created_at?new Date(p.created_at).toLocaleDateString('es-AR'):''}</div>
+          ${p.description?`<div style="font-size:11px;color:var(--textMuted);margin-top:4px">${p.description}</div>`:''}
+        </div>
+        <div style="text-align:right;flex-shrink:0">
+          <div style="font-size:11px;font-weight:700;color:${statusColors[p.status]||'var(--goldDim)'};text-transform:uppercase">${p.status||'pendiente'}</div>
+          ${p.urgency?`<div style="font-size:9px;color:var(--textMuted)">${p.urgency}</div>`:''}
+        </div>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        ${canApprove&&p.status==='pendiente'?`
+        <button class="btn btn-primary" style="font-size:10px;padding:5px 10px" onclick="updatePedido('${p.id}','aprobado')">✓ Aprobar</button>
+        <button class="btn btn-outline" style="font-size:10px;padding:5px 10px;color:var(--error);border-color:var(--error)" onclick="updatePedido('${p.id}','rechazado')">✕ Rechazar</button>`:''}
+        ${canApprove&&p.status==='aprobado'?`<button class="btn btn-outline" style="font-size:10px;padding:5px 10px" onclick="updatePedido('${p.id}','comprado')">Registrar compra</button>`:''}
+        ${canReceive&&p.status==='comprado'?`<button class="btn btn-primary" style="font-size:10px;padding:5px 10px" onclick="updatePedido('${p.id}','recibido')">✓ Confirmar recepción</button>`:''}
+      </div>
+    </div>`).join('')}
+  </div>`;
+
+  el.innerHTML = html;
+}
+
+async function crearPedido() {
+  const item    = document.getElementById('ped-item').value.trim();
+  const qty     = document.getElementById('ped-qty').value.trim();
+  const project = document.getElementById('ped-project').value;
+  const urgency = document.getElementById('ped-urgency').value.trim() || 'Media';
+  const desc    = document.getElementById('ped-desc').value.trim();
+  const msg     = document.getElementById('ped-msg');
+  if (!item||!project) { msg.style.display='block'; msg.style.color='var(--error)'; msg.textContent='Completá material y obra.'; return; }
+  msg.style.display='block'; msg.style.color='var(--goldDim)'; msg.textContent='Enviando...';
+  const result = await db.insert('pedidos',{item,quantity:qty,project_id:project,urgency,description:desc,status:'pendiente',created_by:currentUser.id});
+  if (result) {
+    msg.style.color='var(--success)'; msg.textContent='✓ Pedido enviado.';
+    await notifyByArea('O','Nuevo pedido de materiales',`${currentUser.name} solicitó: ${item} para ${project}.`,'info');
+    setTimeout(()=>renderPedidos(), 1200);
+  } else { msg.style.color='var(--error)'; msg.textContent='Error al enviar.'; }
+}
+
+async function updatePedido(id, newStatus) {
+  await db.patch('pedidos', id, { status: newStatus });
+  if (newStatus==='aprobado') await notifyByArea('I','Pedido aprobado',`Tu pedido de materiales fue aprobado.`,'info');
+  if (newStatus==='rechazado') await notifyByArea('I','Pedido rechazado',`Tu pedido de materiales fue rechazado.`,'alerta');
+  if (newStatus==='recibido') await notifyByArea('I','Materiales recibidos en obra',`Los materiales del pedido fueron confirmados como recibidos.`,'info');
+  renderPedidos();
+}
+
+async function eliminarMovimiento(id) {
+  const existing = document.getElementById('elim-mov-modal');
+  if (existing) existing.remove();
+  const modal = document.createElement('div');
+  modal.id = 'elim-mov-modal';
+  modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:999;display:flex;align-items:center;justify-content:center;padding:20px';
+  modal.innerHTML = `
+    <div style="background:var(--bgCard);border:1px solid var(--goldBorder);border-radius:4px;padding:28px;max-width:400px;width:100%">
+      <div style="font-size:14px;font-weight:700;color:var(--error);margin-bottom:16px">Eliminar movimiento</div>
+      <div class="field" style="margin-bottom:12px"><div class="field-label">Motivo (requerido)</div>
+        <textarea class="field-input" id="em-motivo" placeholder="Justificá la eliminación..." style="height:70px;resize:none"></textarea>
+      </div>
+      <div id="em-msg" style="font-size:11px;display:none;margin-bottom:12px"></div>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-outline" style="font-size:11px;color:var(--error);border-color:var(--error)" onclick="confirmarElimMovimiento('${id}')">Eliminar</button>
+        <button class="btn btn-ghost" style="font-size:11px" onclick="document.getElementById('elim-mov-modal').remove()">Cancelar</button>
+      </div>
+    </div>`;
+  document.body.appendChild(modal);
+}
+
+async function confirmarElimMovimiento(id) {
+  const motivo = document.getElementById('em-motivo').value.trim();
+  const msg    = document.getElementById('em-msg');
+  if (!motivo) { msg.style.display='block'; msg.style.color='var(--error)'; msg.textContent='Escribí el motivo.'; return; }
+  await db.delete('movements', id);
+  document.getElementById('elim-mov-modal').remove();
+  renderFinanzas();
+}
+
+// ─── MÓDULO TRABAJOS ──────────────────────────────────────────────────────────
+async function renderTrabajos() {
+  const area  = getArea(currentUser.role);
+  const level = getLevel(currentUser.role);
+  const el    = document.getElementById('view-trabajos');
+  if (!el) return;
+
+  const canCreate = (area==='I'&&level>=4)||(area==='U'&&level>=4);
+  const isCEO     = currentUser.role === '5U';
+
+  el.innerHTML = `<div class="section-super">Módulo</div><div class="section-title">TRABAJOS</div><div style="color:var(--textMuted);font-size:12px;padding:20px;text-align:center">Cargando...</div>`;
+
+  let todos = await db.query('trabajos','?order=created_at.desc&limit=100') || [];
+
+  // Filtrar visibilidad
+  let trabajos = isCEO ? todos : todos.filter(t=>t.assigned_to===currentUser.id||t.created_by===currentUser.id);
+
+  const STATUS_COLORS = {Pendiente:'var(--textMuted)',Haciendo:'var(--goldDim)',Revisión:'var(--warn)',Cerrado:'var(--success)',Cancelado:'var(--error)'};
+  const PRIO_COLORS   = {normal:'',alta:'var(--warn)',urgente:'var(--error)'};
+
+  let html = `<div class="section-super">Módulo</div><div class="section-title">TRABAJOS</div><div class="section-sub">Encargos y tareas puntuales</div>`;
+
+  // Panel CEO — resumen global
+  if (isCEO) {
+    const stats = {Pendiente:0,Haciendo:0,Revisión:0,Cerrado:0,Cancelado:0};
+    todos.forEach(t=>{ if(stats[t.status]!==undefined) stats[t.status]++; });
+    html += `<div class="grid-4" style="margin-bottom:20px">
+      <div class="card" style="text-align:center"><div style="font-size:22px;font-weight:700;color:var(--warn)">${stats.Pendiente}</div><div style="font-size:10px;color:var(--textMuted)">Pendientes</div></div>
+      <div class="card" style="text-align:center"><div style="font-size:22px;font-weight:700;color:var(--goldDim)">${stats.Haciendo}</div><div style="font-size:10px;color:var(--textMuted)">En curso</div></div>
+      <div class="card" style="text-align:center"><div style="font-size:22px;font-weight:700;color:var(--warn)">${stats.Revisión}</div><div style="font-size:10px;color:var(--textMuted)">En revisión</div></div>
+      <div class="card" style="text-align:center"><div style="font-size:22px;font-weight:700;color:var(--success)">${stats.Cerrado}</div><div style="font-size:10px;color:var(--textMuted)">Cerrados</div></div>
+    </div>`;
+  }
+
+  if (canCreate) {
+    const users = await db.query('users','?select=id,name,role&role=neq.cliente&order=name') || [];
+    html += `<div class="card" style="margin-bottom:20px">
+      <div style="font-size:12px;font-weight:700;color:var(--gold);letter-spacing:.1em;text-transform:uppercase;margin-bottom:12px">+ Nuevo trabajo</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
+        <div class="field" style="margin:0;grid-column:span 2"><div class="field-label">Título</div>
+          <input class="field-input" id="trj-title" placeholder="Ej: Plano gasista García, Trámite municipal, Consulta técnica..."/>
+        </div>
+        <div class="field" style="margin:0"><div class="field-label">Asignar a</div>
+          <select class="field-input" id="trj-assign">
+            <option value="">Sin asignar</option>
+            ${users.map(u=>`<option value="${u.id}">${u.name} — ${u.role}</option>`).join('')}
+          </select>
+        </div>
+        <div class="field" style="margin:0"><div class="field-label">Prioridad</div>
+          <select class="field-input" id="trj-priority">
+            <option value="normal">Normal</option>
+            <option value="alta">Alta</option>
+            <option value="urgente">Urgente</option>
+          </select>
+        </div>
+        <div class="field" style="margin:0;grid-column:span 2"><div class="field-label">Descripción / Detalle del encargo</div>
+          <textarea class="field-input" id="trj-desc" placeholder="Describí el trabajo con el mayor detalle posible..." style="height:70px;resize:none"></textarea>
+        </div>
+        <div class="field" style="margin:0;grid-column:span 2"><div class="field-label">Archivo adjunto (opcional)</div>
+          <input type="file" id="trj-file" style="color:var(--textMuted);font-size:11px;width:100%"/>
+        </div>
+      </div>
+      <div id="trj-msg" style="font-size:11px;display:none;margin-bottom:8px"></div>
+      <button class="btn btn-primary" style="font-size:11px" onclick="crearTrabajo()">Crear trabajo</button>
+    </div>`;
+  }
+
+  html += `<div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap">
+    ${['Todos','Pendiente','Haciendo','Revisión','Cerrado'].map(s=>`
+    <button class="btn btn-ghost" style="font-size:10px;padding:5px 12px" onclick="filtrarTrabajos('${s}')">${s}</button>`).join('')}
+  </div>
+  <div class="col-stack-xs" id="trabajos-list">`;
+
+  if (trabajos.length === 0) {
+    html += `<div style="font-size:12px;color:var(--textMuted);padding:20px;text-align:center">Sin trabajos asignados</div>`;
+  } else {
+    for (const t of trabajos) {
+      // Cargar historial de entregas
+      const entregas = await db.query('trabajo_entregas',`?trabajo_id=eq.${t.id}&order=created_at.asc`) || [];
+      const isCreador   = t.created_by === currentUser.id || isCEO;
+      const isAsignado  = t.assigned_to === currentUser.id;
+      const puedeEntregar = isAsignado && ['Haciendo','Pendiente'].includes(t.status);
+      const puedeAprobar  = isCreador && t.status === 'Revisión';
+
+      html += `<div class="card trj-item" data-status="${t.status||'Pendiente'}" style="margin-bottom:0">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px">
+          <div style="flex:1">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;flex-wrap:wrap">
+              <div style="font-size:14px;color:var(--text);font-weight:700">${t.title||'Sin título'}</div>
+              ${t.priority==='urgente'?`<span style="font-size:9px;background:var(--error);color:#fff;padding:2px 6px;border-radius:10px;font-weight:700">URGENTE</span>`:
+                t.priority==='alta'?`<span style="font-size:9px;background:var(--warn);color:#000;padding:2px 6px;border-radius:10px;font-weight:700">ALTA</span>`:''}
+            </div>
+            ${t.description?`<div style="font-size:12px;color:var(--textMuted);margin-bottom:4px;line-height:1.5">${t.description}</div>`:''}
+            <div style="font-size:10px;color:var(--textMuted)">${t.created_at?new Date(t.created_at).toLocaleDateString('es-AR'):''}</div>
+          </div>
+          <div style="text-align:right;flex-shrink:0;margin-left:12px">
+            <div style="font-size:12px;font-weight:700;color:${STATUS_COLORS[t.status||'Pendiente']}">${t.status||'Pendiente'}</div>
+          </div>
+        </div>
+
+        <!-- HISTORIAL DE ENTREGAS -->
+        ${entregas.length>0?`
+        <div style="margin-bottom:10px;padding:10px;background:var(--bgPanel);border-radius:2px;border-left:2px solid var(--goldBorder)">
+          <div style="font-size:10px;color:var(--goldDim);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px">Historial de entregas</div>
+          ${entregas.map((e,i)=>`<div style="margin-bottom:${i<entregas.length-1?'10px':'0'};padding-bottom:${i<entregas.length-1?'10px':'0'};${i<entregas.length-1?'border-bottom:1px solid var(--bgCard)':''}">
+            <div style="display:flex;justify-content:space-between;margin-bottom:3px">
+              <span style="font-size:11px;color:var(--text);font-weight:600">Entrega ${i+1}</span>
+              <span style="font-size:10px;color:var(--textMuted)">${e.created_at?new Date(e.created_at).toLocaleDateString('es-AR'):''}</span>
+            </div>
+            ${e.observation?`<div style="font-size:11px;color:var(--textMuted);margin-bottom:4px">${e.observation}</div>`:''}
+            ${e.file_url?`<a href="${e.file_url}" target="_blank" style="font-size:10px;color:var(--gold)">📎 Ver archivo →</a>`:''}
+            ${e.feedback?`<div style="margin-top:6px;padding:6px;background:var(--bgCard);border-radius:2px;border-left:2px solid var(--error)">
+              <div style="font-size:9px;color:var(--error);text-transform:uppercase;letter-spacing:.08em;margin-bottom:2px">Observación del revisor</div>
+              <div style="font-size:11px;color:var(--textMuted)">${e.feedback}</div>
+            </div>`:''}
+          </div>`).join('')}
+        </div>`:''} 
+
+        <!-- ACCIONES -->
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          ${t.status==='Pendiente'&&isAsignado?`<button class="btn btn-ghost" style="font-size:10px;padding:5px 10px" onclick="updateTrabajo('${t.id}','Haciendo')">▶ Iniciar</button>`:''}
+          ${puedeEntregar?`<button class="btn btn-primary" style="font-size:10px;padding:5px 10px" onclick="abrirEntrega('${t.id}')">📤 Entregar trabajo</button>`:''}
+          ${puedeAprobar?`
+          <button class="btn btn-primary" style="font-size:10px;padding:5px 10px" onclick="aprobarTrabajo('${t.id}')">✓ Aprobar</button>
+          <button class="btn btn-outline" style="font-size:10px;padding:5px 10px;color:var(--error);border-color:var(--error)" onclick="rechazarTrabajo('${t.id}')">✕ Rechazar con observación</button>`:''}
+          ${isCreador&&!['Cerrado','Cancelado'].includes(t.status)?`<button class="btn btn-ghost" style="font-size:10px;padding:5px 10px;color:var(--error)" onclick="updateTrabajo('${t.id}','Cancelado')">Cancelar</button>`:''}
+          ${isCEO?`<button class="btn btn-ghost" style="font-size:10px;padding:5px 10px;color:var(--error)" onclick="eliminarTrabajo('${t.id}')">✕ Borrar</button>`:''}
+        </div>
+
+        <!-- FORM ENTREGA (oculto) -->
+        <div id="entrega-form-${t.id}" class="hidden" style="margin-top:12px;padding:12px;background:var(--bgPanel);border-radius:2px">
+          <div style="font-size:11px;font-weight:700;color:var(--gold);margin-bottom:10px">📤 Entregar trabajo</div>
+          <textarea class="field-input" id="ent-obs-${t.id}" placeholder="Observaciones sobre la entrega..." style="height:60px;resize:none;margin-bottom:8px"></textarea>
+          <input type="file" id="ent-file-${t.id}" style="color:var(--textMuted);font-size:11px;width:100%;margin-bottom:8px"/>
+          <div id="ent-msg-${t.id}" style="font-size:11px;display:none;margin-bottom:8px"></div>
+          <div style="display:flex;gap:8px">
+            <button class="btn btn-primary" style="font-size:10px" onclick="enviarEntrega('${t.id}')">Enviar entrega</button>
+            <button class="btn btn-ghost" style="font-size:10px" onclick="document.getElementById('entrega-form-${t.id}').classList.add('hidden')">Cancelar</button>
+          </div>
+        </div>
+      </div>`;
+    }
+  }
+
+  html += `</div>`;
+  el.innerHTML = html;
+}
+
+function abrirEntrega(trabajoId) {
+  const form = document.getElementById('entrega-form-'+trabajoId);
+  if (form) form.classList.toggle('hidden');
+}
+
+async function enviarEntrega(trabajoId) {
+  const obs  = document.getElementById('ent-obs-'+trabajoId)?.value.trim();
+  const file = document.getElementById('ent-file-'+trabajoId)?.files?.[0];
+  const msg  = document.getElementById('ent-msg-'+trabajoId);
+
+  if (!obs && !file) { msg.style.display='block'; msg.style.color='var(--error)'; msg.textContent='Agregá una observación o un archivo.'; return; }
+  msg.style.display='block'; msg.style.color='var(--goldDim)'; msg.textContent='Subiendo...';
+
+  let fileUrl = null;
+  if (file) {
+    fileUrl = await uploadFileToStorage(file, `trabajos/${trabajoId}`);
+    if (!fileUrl) { msg.style.color='var(--error)'; msg.textContent='Error al subir el archivo.'; return; }
+  }
+
+  const result = await db.insert('trabajo_entregas',{ trabajo_id:trabajoId, user_id:currentUser.id, observation:obs||'', file_url:fileUrl, feedback:null });
+  if (result) {
+    await db.patch('trabajos', trabajoId, { status:'Revisión' });
+    // Notificar al creador
+    const t = await db.query('trabajos',`?id=eq.${trabajoId}&select=created_by,title`) || [];
+    if (t.length>0) await sendNotification(t[0].created_by, null, `Trabajo entregado — ${t[0].title}`, `${currentUser.name} entregó el trabajo para tu revisión.`, 'avance');
+    msg.style.color='var(--success)'; msg.textContent='✓ Entrega enviada.';
+    setTimeout(()=>renderTrabajos(), 1200);
+  } else { msg.style.color='var(--error)'; msg.textContent='Error al guardar.'; }
+}
+
+async function aprobarTrabajo(trabajoId) {
+  await db.patch('trabajos', trabajoId, { status:'Cerrado' });
+  const t = await db.query('trabajos',`?id=eq.${trabajoId}&select=assigned_to,title`) || [];
+  if (t.length>0&&t[0].assigned_to) await sendNotification(t[0].assigned_to, null, `✓ Trabajo aprobado — ${t[0].title}`, 'Tu entrega fue aprobada.', 'avance');
+  renderTrabajos();
+}
+
+async function rechazarTrabajo(trabajoId) {
+  const ex = document.getElementById('rechazo-trj-modal');
+  if (ex) ex.remove();
+  const m = document.createElement('div');
+  m.id = 'rechazo-trj-modal';
+  m.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px';
+  m.innerHTML = `<div style="background:var(--bgCard);border:1px solid var(--goldBorder);border-radius:4px;padding:28px;max-width:420px;width:100%">
+    <div style="font-size:13px;font-weight:700;color:var(--error);margin-bottom:16px">✕ Rechazar entrega</div>
+    <div class="field" style="margin-bottom:12px"><div class="field-label">Observación para el asignado</div>
+      <textarea class="field-input" id="rtj-obs" placeholder="Describí qué necesita corregirse..." style="height:80px;resize:none"></textarea>
+    </div>
+    <div id="rtj-msg" style="font-size:11px;display:none;margin-bottom:8px"></div>
+    <div style="display:flex;gap:8px">
+      <button class="btn btn-outline" style="font-size:11px;color:var(--error);border-color:var(--error)" onclick="confirmarRechazoTrabajo('${trabajoId}')">Rechazar</button>
+      <button class="btn btn-ghost" style="font-size:11px" onclick="document.getElementById('rechazo-trj-modal').remove()">Cancelar</button>
+    </div>
+  </div>`;
+  document.body.appendChild(m);
+}
+
+async function confirmarRechazoTrabajo(trabajoId) {
+  const obs = document.getElementById('rtj-obs')?.value.trim();
+  const msg = document.getElementById('rtj-msg');
+  if (!obs) { msg.style.display='block'; msg.style.color='var(--error)'; msg.textContent='Escribí la observación.'; return; }
+
+  // Guardar feedback en la última entrega
+  const entregas = await db.query('trabajo_entregas',`?trabajo_id=eq.${trabajoId}&order=created_at.desc&limit=1`) || [];
+  if (entregas.length>0) await db.patch('trabajo_entregas', entregas[0].id, { feedback: obs });
+
+  await db.patch('trabajos', trabajoId, { status:'Haciendo' });
+  const t = await db.query('trabajos',`?id=eq.${trabajoId}&select=assigned_to,title`) || [];
+  if (t.length>0&&t[0].assigned_to) await sendNotification(t[0].assigned_to, null, `✕ Entrega rechazada — ${t[0].title}`, `Observación: ${obs}`, 'alerta');
+
+  document.getElementById('rechazo-trj-modal').remove();
+  renderTrabajos();
+}
+
+async function crearTrabajo() {
+  const title    = document.getElementById('trj-title').value.trim();
+  const assignTo = document.getElementById('trj-assign').value;
+  const priority = document.getElementById('trj-priority').value;
+  const desc     = document.getElementById('trj-desc').value.trim();
+  const file     = document.getElementById('trj-file')?.files?.[0];
+  const msg      = document.getElementById('trj-msg');
+  if (!title) { msg.style.display='block'; msg.style.color='var(--error)'; msg.textContent='Ingresá el título.'; return; }
+  msg.style.display='block'; msg.style.color='var(--goldDim)'; msg.textContent='Creando...';
+
+  let fileUrl = null;
+  if (file) { fileUrl = await uploadFileToStorage(file, 'trabajos/inicial'); }
+
+  const result = await db.insert('trabajos',{ title, description:desc, priority, status:'Pendiente', assigned_to:assignTo||null, created_by:currentUser.id, initial_file:fileUrl });
+  if (result) {
+    msg.style.color='var(--success)'; msg.textContent='✓ Trabajo creado.';
+    if (assignTo) await sendNotification(assignTo, null, `Nuevo trabajo asignado — ${title}`, `${currentUser.name} te asignó: "${title}". ${desc?'Descripción: '+desc:''}`, 'info');
+    setTimeout(()=>renderTrabajos(), 1000);
+  } else { msg.style.color='var(--error)'; msg.textContent='Error al crear.'; }
+}
+
+async function updateTrabajo(id, status) {
+  await db.patch('trabajos', id, { status });
+  renderTrabajos();
+}
+
+async function eliminarTrabajo(id) {
+  confirmarAccion('¿Eliminar este trabajo?', async () => {
+    await db.delete('trabajos', id);
+    renderTrabajos();
+  });
+}
+
+function filtrarTrabajos(status) {
+  const items = document.querySelectorAll('.trj-item');
+  items.forEach(el => {
+    if (status==='Todos'||el.dataset.status===status) el.style.display='';
+    else el.style.display='none';
+  });
+}
+
+// ─── LOG DE AUDITORÍA ─────────────────────────────────────────────────────────
+async function renderAuditoria() {
+  const el = document.getElementById('view-auditoria');
+  if (!el) return;
+  el.innerHTML = `<div class="section-super">Sistema</div><div class="section-title">LOG DE AUDITORÍA</div><div style="color:var(--textMuted);font-size:12px;padding:20px;text-align:center">Cargando...</div>`;
+
+  // Combinar notificaciones, movimientos, cambios de estado en un log unificado
+  const [notifs, movs, pedidos] = await Promise.all([
+    db.query('notifications','?order=created_at.desc&limit=50') || [],
+    db.query('movements','?order=created_at.desc&limit=50') || [],
+    db.query('pedidos','?order=created_at.desc&limit=30') || [],
+  ]);
+
+  const fmt = n => '$'+Number(n).toLocaleString('es-AR');
+
+  // Construir log unificado
+  const log = [
+    ...(notifs||[]).map(n=>({ ts:n.created_at, tipo:'notif', icon:'◉', color:'var(--goldDim)', desc:n.title, detail:n.body||'', user:n.role_target||'' })),
+    ...(movs||[]).map(m=>({ ts:m.created_at, tipo:'movimiento', icon:m.type==='ingreso'?'↑':'↓', color:m.type==='ingreso'?'var(--success)':'var(--error)', desc:`${m.type==='ingreso'?'Ingreso':'Egreso'} — ${m.concept}`, detail:`${fmt(m.amount)} · ${m.status||''} · ${m.category||''}`, user:'' })),
+    ...(pedidos||[]).map(p=>({ ts:p.created_at, tipo:'pedido', icon:'📦', color:'var(--warn)', desc:`Pedido — ${p.item||''}`, detail:`${p.quantity||''} · ${p.project_id||''} · ${p.status||''}`, user:'' })),
+  ].sort((a,b)=>new Date(b.ts)-new Date(a.ts)).slice(0,100);
+
+  // Filtros
+  el.innerHTML = `
+    <div class="section-super">Sistema · CEO</div>
+    <div class="section-title">LOG DE AUDITORÍA</div>
+    <div class="section-sub">Historial completo de acciones del sistema</div>
+
+    <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap">
+      ${['Todo','Movimientos','Notificaciones','Pedidos'].map(f=>`
+      <button class="btn btn-ghost" style="font-size:10px;padding:5px 12px" onclick="filtrarAudit('${f.toLowerCase()}')">${f}</button>`).join('')}
+    </div>
+
+    <div class="col-stack-xs" id="audit-list">
+      ${log.length===0?`<div style="font-size:12px;color:var(--textMuted);padding:20px;text-align:center">Sin registros</div>`:''}
+      ${log.map(e=>{
+        const time = e.ts ? new Date(e.ts).toLocaleString('es-AR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}) : '';
+        return `<div class="card audit-row" data-tipo="${e.tipo}" style="display:flex;gap:12px;align-items:flex-start">
+          <div style="font-size:18px;color:${e.color};flex-shrink:0;margin-top:2px">${e.icon}</div>
+          <div style="flex:1;min-width:0">
+            <div style="font-size:12px;color:var(--text);font-weight:600;margin-bottom:2px">${e.desc}</div>
+            ${e.detail?`<div style="font-size:11px;color:var(--textMuted);margin-bottom:2px">${e.detail}</div>`:''}
+            <div style="font-size:10px;color:var(--textMuted)">${time}${e.user?' · '+e.user:''}</div>
+          </div>
+          <div style="font-size:9px;color:var(--textMuted);text-transform:uppercase;letter-spacing:.06em;flex-shrink:0">${e.tipo}</div>
+        </div>`;
+      }).join('')}
+    </div>`;
+}
+
+function filtrarAudit(tipo) {
+  document.querySelectorAll('.audit-row').forEach(el=>{
+    if (tipo==='todo'||el.dataset.tipo===tipo) el.style.display='';
+    else el.style.display='none';
+  });
 }
 
 function toggleUpload(id) {
@@ -877,16 +3278,7 @@ function toggleUpload(id) {
 }
 
 async function markProgress(taskId) {
-  // Update locally
-  PROJECTS.forEach(p => {
-    const t = p.tasks.find(t=>t.id===taskId);
-    if (t && t.status==='Haciendo') t.status = 'Revisión';
-  });
-  // Try Supabase
-  if (SUPABASE_ANON_KEY) {
-    await db.patch('tasks', taskId, { status: 'Revisión' });
-  }
-  renderMyTasks();
+  await changeTaskStatus(taskId, 'Revisión', 'view-mytasks');
 }
 </script>
 </body>
